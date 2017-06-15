@@ -1,0 +1,352 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		931843F01EEF350D00AE51F8 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 931843EC1EEF350D00AE51F8 /* main.cpp */; };
+		931843F11EEF350D00AE51F8 /* main.h in Headers */ = {isa = PBXBuildFile; fileRef = 931843ED1EEF350D00AE51F8 /* main.h */; };
+		931843F21EEF350D00AE51F8 /* x2camera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 931843EE1EEF350D00AE51F8 /* x2camera.cpp */; };
+		931843F31EEF350D00AE51F8 /* x2camera.h in Headers */ = {isa = PBXBuildFile; fileRef = 931843EF1EEF350D00AE51F8 /* x2camera.h */; };
+		931843F71EEF392800AE51F8 /* libdc1394.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 931843F51EEF392800AE51F8 /* libdc1394.a */; };
+		931843FB1EEF394F00AE51F8 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 931843FA1EEF394F00AE51F8 /* IOKit.framework */; };
+		931843FD1EEF395D00AE51F8 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 931843FC1EEF395D00AE51F8 /* CoreFoundation.framework */; };
+		931844001EEF460500AE51F8 /* cameraIIDC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 931843FE1EEF460500AE51F8 /* cameraIIDC.cpp */; };
+		931844011EEF460500AE51F8 /* cameraIIDC.h in Headers */ = {isa = PBXBuildFile; fileRef = 931843FF1EEF460500AE51F8 /* cameraIIDC.h */; };
+		931844041EEF502500AE51F8 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 931844021EEF500B00AE51F8 /* CoreServices.framework */; };
+		931844061EEF507A00AE51F8 /* libusb-1.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 931844051EEF507A00AE51F8 /* libusb-1.0.a */; };
+		931844081EEF50D100AE51F8 /* libobjc.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 931844071EEF50D100AE51F8 /* libobjc.tbd */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		931843E31EEF33FC00AE51F8 /* libIIDC.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libIIDC.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		931843EC1EEF350D00AE51F8 /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		931843ED1EEF350D00AE51F8 /* main.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
+		931843EE1EEF350D00AE51F8 /* x2camera.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = x2camera.cpp; sourceTree = "<group>"; };
+		931843EF1EEF350D00AE51F8 /* x2camera.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = x2camera.h; sourceTree = "<group>"; };
+		931843F51EEF392800AE51F8 /* libdc1394.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libdc1394.a; path = static_libs/OSX/libdc1394.a; sourceTree = "<group>"; };
+		931843FA1EEF394F00AE51F8 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
+		931843FC1EEF395D00AE51F8 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+		931843FE1EEF460500AE51F8 /* cameraIIDC.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cameraIIDC.cpp; sourceTree = "<group>"; };
+		931843FF1EEF460500AE51F8 /* cameraIIDC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cameraIIDC.h; sourceTree = "<group>"; };
+		931844021EEF500B00AE51F8 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
+		931844051EEF507A00AE51F8 /* libusb-1.0.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = "libusb-1.0.a"; path = "static_libs/OSX/libusb-1.0.a"; sourceTree = "<group>"; };
+		931844071EEF50D100AE51F8 /* libobjc.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libobjc.tbd; path = usr/lib/libobjc.tbd; sourceTree = SDKROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		931843E01EEF33FC00AE51F8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				931844081EEF50D100AE51F8 /* libobjc.tbd in Frameworks */,
+				931844041EEF502500AE51F8 /* CoreServices.framework in Frameworks */,
+				931843FD1EEF395D00AE51F8 /* CoreFoundation.framework in Frameworks */,
+				931843FB1EEF394F00AE51F8 /* IOKit.framework in Frameworks */,
+				931843F71EEF392800AE51F8 /* libdc1394.a in Frameworks */,
+				931844061EEF507A00AE51F8 /* libusb-1.0.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		931843DA1EEF33FC00AE51F8 = {
+			isa = PBXGroup;
+			children = (
+				931843F41EEF391800AE51F8 /* Libs */,
+				931843EA1EEF341C00AE51F8 /* Sources */,
+				931843E41EEF33FC00AE51F8 /* Products */,
+				931843F91EEF394F00AE51F8 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		931843E41EEF33FC00AE51F8 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				931843E31EEF33FC00AE51F8 /* libIIDC.dylib */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		931843EA1EEF341C00AE51F8 /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				931843EC1EEF350D00AE51F8 /* main.cpp */,
+				931843ED1EEF350D00AE51F8 /* main.h */,
+				931843EE1EEF350D00AE51F8 /* x2camera.cpp */,
+				931843EF1EEF350D00AE51F8 /* x2camera.h */,
+				931843FE1EEF460500AE51F8 /* cameraIIDC.cpp */,
+				931843FF1EEF460500AE51F8 /* cameraIIDC.h */,
+			);
+			name = Sources;
+			sourceTree = "<group>";
+		};
+		931843F41EEF391800AE51F8 /* Libs */ = {
+			isa = PBXGroup;
+			children = (
+				931844051EEF507A00AE51F8 /* libusb-1.0.a */,
+				931843F51EEF392800AE51F8 /* libdc1394.a */,
+			);
+			name = Libs;
+			sourceTree = "<group>";
+		};
+		931843F91EEF394F00AE51F8 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				931844071EEF50D100AE51F8 /* libobjc.tbd */,
+				931844021EEF500B00AE51F8 /* CoreServices.framework */,
+				931843FC1EEF395D00AE51F8 /* CoreFoundation.framework */,
+				931843FA1EEF394F00AE51F8 /* IOKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		931843E11EEF33FC00AE51F8 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				931843F11EEF350D00AE51F8 /* main.h in Headers */,
+				931844011EEF460500AE51F8 /* cameraIIDC.h in Headers */,
+				931843F31EEF350D00AE51F8 /* x2camera.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		931843E21EEF33FC00AE51F8 /* IIDC */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 931843E71EEF33FC00AE51F8 /* Build configuration list for PBXNativeTarget "IIDC" */;
+			buildPhases = (
+				931843DF1EEF33FC00AE51F8 /* Sources */,
+				931843E01EEF33FC00AE51F8 /* Frameworks */,
+				931843E11EEF33FC00AE51F8 /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = IIDC;
+			productName = IIDC;
+			productReference = 931843E31EEF33FC00AE51F8 /* libIIDC.dylib */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		931843DB1EEF33FC00AE51F8 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0820;
+				ORGANIZATIONNAME = "RTI-Zone";
+				TargetAttributes = {
+					931843E21EEF33FC00AE51F8 = {
+						CreatedOnToolsVersion = 8.2.1;
+						DevelopmentTeam = PB97QXVYQC;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 931843DE1EEF33FC00AE51F8 /* Build configuration list for PBXProject "IIDC" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 931843DA1EEF33FC00AE51F8;
+			productRefGroup = 931843E41EEF33FC00AE51F8 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				931843E21EEF33FC00AE51F8 /* IIDC */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		931843DF1EEF33FC00AE51F8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				931844001EEF460500AE51F8 /* cameraIIDC.cpp in Sources */,
+				931843F21EEF350D00AE51F8 /* x2camera.cpp in Sources */,
+				931843F01EEF350D00AE51F8 /* main.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		931843E51EEF33FC00AE51F8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libstdc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				"GCC_PREPROCESSOR_DEFINITIONS[arch=*]" = SB_MAC_BUILD;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/\"",
+					"\"$(SRCROOT)/../..\"",
+					/usr/local/include,
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = NO;
+				SDKROOT = macosx;
+				VALID_ARCHS = i386;
+			};
+			name = Debug;
+		};
+		931843E61EEF33FC00AE51F8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libstdc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				"GCC_PREPROCESSOR_DEFINITIONS[arch=*]" = SB_MAC_BUILD;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"\"$(SRCROOT)/\"",
+					"\"$(SRCROOT)/../..\"",
+					/usr/local/include,
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				ONLY_ACTIVE_ARCH = NO;
+				SDKROOT = macosx;
+				VALID_ARCHS = i386;
+			};
+			name = Release;
+		};
+		931843E81EEF33FC00AE51F8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				DEVELOPMENT_TEAM = PB97QXVYQC;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EXECUTABLE_PREFIX = lib;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/static_libs/OSX",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				VALID_ARCHS = i386;
+			};
+			name = Debug;
+		};
+		931843E91EEF33FC00AE51F8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_BIT)";
+				DEVELOPMENT_TEAM = PB97QXVYQC;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EXECUTABLE_PREFIX = lib;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/static_libs/OSX",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				VALID_ARCHS = i386;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		931843DE1EEF33FC00AE51F8 /* Build configuration list for PBXProject "IIDC" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				931843E51EEF33FC00AE51F8 /* Debug */,
+				931843E61EEF33FC00AE51F8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		931843E71EEF33FC00AE51F8 /* Build configuration list for PBXNativeTarget "IIDC" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				931843E81EEF33FC00AE51F8 /* Debug */,
+				931843E91EEF33FC00AE51F8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 931843DB1EEF33FC00AE51F8 /* Project object */;
+}
