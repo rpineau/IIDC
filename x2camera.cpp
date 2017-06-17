@@ -249,12 +249,10 @@ int X2Camera::CCEndExposure(const enumCameraIndex& Cam, const enumWhichCCD CCD, 
 		return ERR_NOLINK;
 
 	int nErr = SB_OK;
-    nErr = m_Camera.stopCaputure();
-    if(nErr)
-        return nErr;
 
 	if (bWasAborted)
-	{
+    {
+        m_Camera.abortCapture();
         // cleanup ?
 	}
 

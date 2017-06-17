@@ -19,7 +19,7 @@ CCameraIIDC::CCameraIIDC()
     m_bDeviceIsUSB = false;
     m_bFrameAvailable = false;
     m_cameraGuid = 0;
-
+    m_bAbort = false;
 
 }
 
@@ -310,6 +310,7 @@ int CCameraIIDC::startCaputure()
             return ERR_CMDFAILED;
         }
     }
+    m_bAbort = false;
     return nErr;
 }
 
@@ -326,6 +327,12 @@ int CCameraIIDC::stopCaputure()
             return ERR_CMDFAILED;
     }
     return nErr;
+}
+
+void CCameraIIDC::abortCapture(void)
+{
+    m_bAbort = true;
+    stopCaputure();
 }
 
 int CCameraIIDC::getTemperture(double &dTEmp)
@@ -393,6 +400,9 @@ bool CCameraIIDC::isFameAvailable()
     dc1394video_frame_t *frame;
     int nErr;
 
+    if(m_bAbort)
+        return false;
+
     nErr = dc1394_capture_dequeue(m_ptDcCamera, DC1394_CAPTURE_POLICY_POLL, &frame);
     if(nErr) {
         m_bFrameAvailable = false;
@@ -405,7 +415,7 @@ bool CCameraIIDC::isFameAvailable()
         dc1394_capture_enqueue (m_ptDcCamera, frame);
         stopCaputure();
     }
-
+    
     return m_bFrameAvailable;
 }
 

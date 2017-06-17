@@ -45,6 +45,7 @@ public:
     int         clearROI(void);
     bool        isFameAvailable(void);
     void        clearFrameMemory(void);
+    void        abortCapture(void);
 
 protected:
     bool                    bIsVideoFormat7(dc1394video_mode_t tMode);
@@ -84,5 +85,7 @@ protected:
     unsigned char *         m_pframeBuffer;
     uint64_t                m_cameraGuid;
     bool                    m_bDeviceIsUSB;
+    bool                    m_bAbort;
+
 };
 #endif /* cameraIIDC_hpp */
