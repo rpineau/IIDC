@@ -195,6 +195,8 @@ void CCameraIIDC::Disconnect()
         dc1394_capture_stop(m_ptDcCamera);
         dc1394_camera_reset(m_ptDcCamera);
         dc1394_reset_bus(m_ptDcCamera);
+        dc1394_camera_free(m_ptDcCamera);
+        m_ptDcCamera = NULL;
     }
 
     if(m_pframeBuffer) {
