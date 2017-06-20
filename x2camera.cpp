@@ -271,7 +271,12 @@ int X2Camera::CCGetChipSize(const enumCameraIndex& Camera, const enumWhichCCD& C
 	nH = height()/nYBin;
     nReadOut = CameraDriverInterface::rm_Image;
 
-	return SB_OK;
+    printf("nXBin = %d\n", nXBin);
+    printf("nYBin = %d\n", nYBin);
+    printf("nW = %d\n", nW);
+    printf("nH = %d\n",nH );
+
+    return SB_OK;
 }
 
 int X2Camera::CCGetNumBins(const enumCameraIndex& Camera, const enumWhichCCD& CCD, int& nNumBins)
@@ -364,7 +369,13 @@ int X2Camera::CCReadoutImage(const enumCameraIndex& Cam, const enumWhichCCD& CCD
 	if (!m_bLinked)
 		return ERR_NOLINK;
 
-	return SB_OK;
+    m_Camera.getFrame(nHeight, nMemWidth, pMem);
+    printf("nWidth = %d\n",nWidth);
+    printf("nHeight = %d\n",nHeight);
+    printf("nMemWidth = %d\n",nMemWidth);
+    printf("pMem = %px\n",pMem);
+
+    return SB_OK;
 }
 
 int X2Camera::CCDisconnect(const bool bShutDownTemp)
@@ -390,6 +401,8 @@ int X2Camera::CCSetImageProps(const enumCameraIndex& Camera, const enumWhichCCD&
 int X2Camera::CCGetFullDynamicRange(const enumCameraIndex& Camera, const enumWhichCCD& CCD, unsigned long& dwDynRg)
 {
 	X2MutexLocker ml(GetMutex());
+
+    dwDynRg = (unsigned long)m_Camera.getBitDepth();
 
 	return SB_OK;
 }
@@ -470,6 +483,7 @@ int X2Camera::height()
 
     if(m_bLinked) {
         m_Camera.getHeight(nDef);
+
     }
     return nDef;
 }

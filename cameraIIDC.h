@@ -30,13 +30,15 @@ public:
     ~CCameraIIDC();
 
     int         Connect(uint64_t cameraGuid);
-    void         Disconnect(void);
+    void        Disconnect(void);
     void        setCameraGuid(uint64_t tGuid);
     int         listCamera(std::vector<uint64_t>  &cameraIdList);
     void        updateFrame(dc1394video_frame_t *frame);
 
     int         startCaputure();
     int         stopCaputure();
+    void        abortCapture(void);
+
     int         getTemperture(double &dTEmp);
     int         getWidth(int &nWidth);
     int         getHeight(int &nHeight);
@@ -45,10 +47,14 @@ public:
     int         clearROI(void);
     bool        isFameAvailable(void);
     void        clearFrameMemory(void);
-    void        abortCapture(void);
+
+    uint32_t    getBitDepth();
+    int         getFrame(int nHeight, int nMemWidth, unsigned char* frameBuffer);
 
 protected:
     bool                    bIsVideoFormat7(dc1394video_mode_t tMode);
+    bool                    bIs16bitMode(dc1394video_mode_t tMode);
+    void                    setCameraFeatures(void);
 
     dc1394camera_t          *m_ptDcCamera;
     dc1394_t                *m_ptDc1394Lib;
@@ -58,20 +64,27 @@ protected:
 
     dc1394featureset_t      m_tFeatures;
     dc1394feature_info_t    m_tFeature_white_balance;
+    uint32_t                m_nBlue;
+    uint32_t                m_nRed;
+
     dc1394feature_info_t    m_tFeature_hue;
+    uint32_t                m_nCurrentHue;
+
     dc1394feature_info_t    m_tFeature_brightness;
+    uint32_t                m_nCurrentBrightness;
+
     dc1394feature_info_t    m_tFeature_gamma;
+    uint32_t                m_nCurrentGama;
+
     dc1394framerates_t      m_tFramerates;
     dc1394framerate_t       m_tCurFrameRate;
     dc1394color_coding_t    m_tCoding;
     uint32_t                m_nPacketSize;
 
-    uint32_t                m_nBlue;
-    uint32_t                m_nRed;
 
     uint16_t                m_nSamplesPerPixel;
     uint16_t                m_nBitsPerSample;
-    uint16_t                m_nBitsPerPixel;
+    uint32_t                m_nBitsPerPixel;
     bool                    m_bNeedSwap;
     bool                    m_bNeedDepthFix;
     uint8_t                 m_nDepthBitLeftShift;

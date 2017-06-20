@@ -20,6 +20,14 @@ CCameraIIDC::CCameraIIDC()
     m_bFrameAvailable = false;
     m_cameraGuid = 0;
     m_bAbort = false;
+    m_nBitsPerPixel = 0;
+
+    // camera features default value.
+    m_nCurrentHue = 0;
+    m_nBlue = 0;
+    m_nRed = 0;
+    m_nCurrentBrightness = 0;
+    m_nCurrentGama = 0;
 
 }
 
@@ -43,6 +51,7 @@ int CCameraIIDC::Connect(uint64_t cameraGuid)
     uint32_t PGR_byte_swap_register;
     int i;
     int nFrameSize;
+    uint32_t nTemp;
     if(cameraGuid)
         m_cameraGuid = cameraGuid;
     else
@@ -129,6 +138,26 @@ int CCameraIIDC::Connect(uint64_t cameraGuid)
         }
     }
 
+    /* format 7 mode requires packet size to be set .. to be tested.
+     if(bIsVideoFormat7(m_tCurrentMode)) {
+         nErr = dc1394_format7_get_recommended_packet_size(m_ptDcCamera, m_tCurrentMode, &m_nPacketSize);
+         nErr = dc1394_format7_set_packet_size(m_ptDcCamera, m_tCurrentMode, m_nPacketSize);
+         nErr = dc1394_format7_get_data_depth(m_ptDcCamera, m_tCurrentMode, &m_nBitsPerPixel);
+         if(m_nBitsPerPixel == 16) 
+            m_bBodeIs16bits = true;
+         else
+            m_bBodeIs16bits = false;
+     }
+     else { // not format 7
+     */
+    m_bBodeIs16bits = bIs16bitMode(m_tCurrentMode);
+    if(m_bBodeIs16bits)
+        m_nBitsPerPixel = 16;
+    else
+        m_nBitsPerPixel = 8;
+
+    // } // end of not format 7
+    
     nErr = dc1394_video_set_mode(m_ptDcCamera, m_tCurrentMode);
     if(nErr)
         return ERR_COMMANDNOTSUPPORTED;
@@ -186,6 +215,66 @@ int CCameraIIDC::Connect(uint64_t cameraGuid)
         return ERR_COMMANDNOTSUPPORTED;
 
 
+    // debug
+    // print current feature values.
+    nErr = dc1394_feature_get(m_ptDcCamera, &m_tFeature_hue);
+    nErr = dc1394_feature_get(m_ptDcCamera, &m_tFeature_brightness);
+    nErr = dc1394_feature_get(m_ptDcCamera, &m_tFeature_gamma);
+    nErr = dc1394_feature_get(m_ptDcCamera, &m_tFeature_white_balance);
+    printf("========== Initial values ==========\n");
+    nErr = dc1394_feature_get_all(m_ptDcCamera,&m_tFeatures);
+    dc1394_feature_print_all(&m_tFeatures, stdout);
+    printf("====================================\n");
+    printf("====================================\n");
+
+
+
+
+    // set some basic hardcoded features values
+    nTemp = 480;
+    nErr = dc1394_feature_set_value(m_ptDcCamera, DC1394_FEATURE_FRAME_RATE, nTemp );
+    if(nErr)
+        printf("Error setting DC1394_FEATURE_FRAME_RATE\n");
+
+    nTemp = 510;
+    nErr = dc1394_feature_set_value(m_ptDcCamera, DC1394_FEATURE_BRIGHTNESS, nTemp );
+    if(nErr)
+        printf("Error setting DC1394_FEATURE_BRIGHTNESS\n");
+
+    nTemp = 310;
+    nErr = dc1394_feature_set_value(m_ptDcCamera, DC1394_FEATURE_EXPOSURE, nTemp );
+    if(nErr)
+        printf("Error setting DC1394_FEATURE_EXPOSURE\n");
+
+    nTemp = 1529;
+    nErr = dc1394_feature_set_value(m_ptDcCamera, DC1394_FEATURE_SHARPNESS, nTemp );
+    if(nErr)
+        printf("Error setting DC1394_FEATURE_SHARPNESS\n");
+
+    nTemp = 1024;
+    nErr = dc1394_feature_set_value(m_ptDcCamera, DC1394_FEATURE_GAMMA, nTemp );
+    if(nErr)
+        printf("Error setting DC1394_FEATURE_GAMMA\n");
+
+    nTemp = 286;
+    nErr = dc1394_feature_set_value(m_ptDcCamera, DC1394_FEATURE_SHUTTER, nTemp );
+    if(nErr)
+        printf("Error setting DC1394_FEATURE_SHUTTER\n");
+
+    nTemp = 65;
+    nErr = dc1394_feature_set_value(m_ptDcCamera, DC1394_FEATURE_GAIN, nTemp );
+    if(nErr)
+        printf("Error setting DC1394_FEATURE_GAIN\n");
+
+
+
+    printf("========== New values ==========\n");
+    nErr = dc1394_feature_get_all(m_ptDcCamera,&m_tFeatures);
+    dc1394_feature_print_all(&m_tFeatures, stdout);
+    printf("====================================\n");
+    printf("====================================\n");
+
+    m_bConnected = true;
     return nErr;
 }
 
@@ -203,6 +292,8 @@ void CCameraIIDC::Disconnect()
         free(m_pframeBuffer);
         m_pframeBuffer = NULL;
     }
+    m_bConnected = false;
+
 }
 
 void CCameraIIDC::setCameraGuid(uint64_t tGuid)
@@ -313,6 +404,7 @@ int CCameraIIDC::startCaputure()
         }
     }
     m_bAbort = false;
+    m_bFrameAvailable = false;
     return nErr;
 }
 
@@ -353,13 +445,15 @@ int CCameraIIDC::getTemperture(double &dTEmp)
     return nErr;
 }
 
+
 int CCameraIIDC::getWidth(int &nWidth)
 {
     int nErr = SB_OK;
 
     if (m_ptDcCamera && m_bConnected) {
         nWidth = m_nWidth;
-    }
+    } else
+        printf("[getWidth] NOT CONNECTED\n");
     return nErr;
 }
 
@@ -369,7 +463,8 @@ int CCameraIIDC::getHeight(int &nHeight)
 
     if (m_ptDcCamera && m_bConnected) {
         nHeight = m_nHeight;
-    }
+    } else
+        printf("[getHeight] NOT CONNECTED\n");
 
     return nErr;
 }
@@ -380,6 +475,7 @@ int CCameraIIDC::setROI(int nLeft, int nTop, int nRight, int nBottom)
 
     if(bIsVideoFormat7(m_tCurrentMode)) {
         nErr = dc1394_format7_get_recommended_packet_size(m_ptDcCamera, m_tCurrentMode, &m_nPacketSize);
+        nErr = dc1394_format7_set_packet_size(m_ptDcCamera, m_tCurrentMode, m_nPacketSize);
         nErr = dc1394_format7_set_roi(m_ptDcCamera, m_tCurrentMode, m_tCoding, m_nPacketSize, nLeft, nTop, nRight, nBottom);
     }
     return nErr;
@@ -405,19 +501,21 @@ bool CCameraIIDC::isFameAvailable()
     if(m_bAbort)
         return false;
 
-    nErr = dc1394_capture_dequeue(m_ptDcCamera, DC1394_CAPTURE_POLICY_POLL, &frame);
-    if(nErr) {
-        m_bFrameAvailable = false;
-        return m_bFrameAvailable;
+    // m_bFrameAvailable is set to false in startCapture
+    if(!m_bFrameAvailable) {
+        nErr = dc1394_capture_dequeue(m_ptDcCamera, DC1394_CAPTURE_POLICY_POLL, &frame);
+        if(nErr) {
+            m_bFrameAvailable = false;
+            return m_bFrameAvailable;
+        }
+        if(frame) {
+            printf("We got a frame\n");
+            updateFrame(frame);
+            m_bFrameAvailable = true;
+            dc1394_capture_enqueue (m_ptDcCamera, frame);
+            stopCaputure();
+        }
     }
-    if(frame) {
-        printf("We got a frame\n");
-        updateFrame(frame);
-        m_bFrameAvailable = true;
-        dc1394_capture_enqueue (m_ptDcCamera, frame);
-        stopCaputure();
-    }
-    
     return m_bFrameAvailable;
 }
 
@@ -427,6 +525,29 @@ void CCameraIIDC::clearFrameMemory()
         free(m_pframeBuffer);
         m_pframeBuffer = NULL;
     }
+}
+
+uint32_t CCameraIIDC::getBitDepth()
+{
+    return m_nBitsPerPixel;
+}
+
+int CCameraIIDC::getFrame(int nHeight, int nMemWidth, unsigned char* frameBuffer)
+{
+    int nErr = SB_OK;
+    int sizeToCopy;
+
+    if(!m_bFrameAvailable)
+        return ERR_OBJECTNOTFOUND;
+
+    if(!frameBuffer)
+        return ERR_POINTER;
+
+    //  copy internal m_pframeBuffer to frameBuffer
+    sizeToCopy = nHeight * nMemWidth;
+    memcpy(frameBuffer, m_pframeBuffer, sizeToCopy);
+
+    return nErr;
 }
 
 
@@ -454,4 +575,126 @@ bool CCameraIIDC::bIsVideoFormat7(dc1394video_mode_t tMode)
     return bIsFormat7;
 }
 
+bool CCameraIIDC::bIs16bitMode(dc1394video_mode_t tMode)
+{
+    bool b16bitMode = false;
+    int nErr;
+    uint32_t    nDepth;
 
+    switch (tMode) {
+        case DC1394_VIDEO_MODE_FORMAT7_0:
+        case DC1394_VIDEO_MODE_FORMAT7_1:
+        case DC1394_VIDEO_MODE_FORMAT7_2:
+        case DC1394_VIDEO_MODE_FORMAT7_3:
+        case DC1394_VIDEO_MODE_FORMAT7_4:
+        case DC1394_VIDEO_MODE_FORMAT7_5:
+        case DC1394_VIDEO_MODE_FORMAT7_6:
+        case DC1394_VIDEO_MODE_FORMAT7_7:
+            nErr = dc1394_format7_get_data_depth(m_ptDcCamera, tMode, &nDepth);
+            if(nErr)
+                return false;
+            if(nDepth == 16)
+                b16bitMode = true;
+            break;
+
+        case DC1394_VIDEO_MODE_640x480_MONO16:
+        case DC1394_VIDEO_MODE_800x600_MONO16:
+        case DC1394_VIDEO_MODE_1024x768_MONO16:
+        case DC1394_VIDEO_MODE_1280x960_MONO16:
+        case DC1394_VIDEO_MODE_1600x1200_MONO16:
+            b16bitMode = true;
+            break;
+
+        default:
+            b16bitMode = false;
+            break;
+    }
+
+    return b16bitMode;
+}
+
+void CCameraIIDC::setCameraFeatures()
+{
+    int nErr;
+    uint32_t nTemp;
+
+
+    if(m_nCurrentHue == 0) { // not set yet so we set some sane value
+        printf("set the hue in the midle of min/max\n");
+        m_tFeature_hue.id = DC1394_FEATURE_HUE;
+        nErr = dc1394_feature_get(m_ptDcCamera, &m_tFeature_hue);
+        nTemp = m_tFeature_hue.min + (m_tFeature_hue.max - m_tFeature_hue.min)/2 -1;
+        printf("nTemp = %u\n", nTemp);
+        nErr = dc1394_feature_set_value(m_ptDcCamera, DC1394_FEATURE_HUE, nTemp );
+        nErr = dc1394_feature_get(m_ptDcCamera, &m_tFeature_hue);
+        m_nCurrentHue = m_tFeature_hue.value;
+    }
+    else {
+        nErr = dc1394_feature_set_value(m_ptDcCamera, DC1394_FEATURE_HUE, m_nCurrentHue );
+        nErr = dc1394_feature_get(m_ptDcCamera, &m_tFeature_hue);
+    }
+    printf("m_tFeature_hue.value = %u\n", m_tFeature_hue.value);
+    printf("m_nCurrentHue = %u\n", m_nCurrentHue);
+    printf("====================================\n");
+
+    if(m_nCurrentBrightness == 0) { // not set yet so we set some sane value
+        printf("set the brightness in the midle of min/max]\n");
+        m_tFeature_brightness.id = DC1394_FEATURE_BRIGHTNESS;
+        nErr = dc1394_feature_get(m_ptDcCamera, &m_tFeature_brightness);
+        nTemp = m_tFeature_brightness.min + (m_tFeature_brightness.max - m_tFeature_brightness.min)/2 -1;
+        printf("nTemp = %u\n", nTemp);
+        nErr = dc1394_feature_set_value(m_ptDcCamera, DC1394_FEATURE_BRIGHTNESS, nTemp );
+        nErr = dc1394_feature_get(m_ptDcCamera, &m_tFeature_brightness);
+        m_nCurrentBrightness = m_tFeature_brightness.value;
+    }
+    else {
+        nErr = dc1394_feature_set_value(m_ptDcCamera, DC1394_FEATURE_BRIGHTNESS, m_nCurrentBrightness);
+        nErr = dc1394_feature_get(m_ptDcCamera, &m_tFeature_brightness);
+    }
+    printf("m_tFeature_brightness.value = %u\n", m_tFeature_brightness.value);
+    printf("m_nCurrentBrightness = %u\n", m_nCurrentBrightness);
+    printf("====================================\n");
+
+    if(m_nCurrentGama == 0) { // not set yet so we set some sane value
+        printf("set the gama in the midle of min/max\n");
+        m_tFeature_gamma.id = DC1394_FEATURE_GAMMA;
+        nErr = dc1394_feature_get(m_ptDcCamera, &m_tFeature_gamma);
+        nTemp = m_tFeature_gamma.min + (m_tFeature_gamma.max - m_tFeature_gamma.min)/2 -1;
+        printf("nTemp = %u\n", nTemp);
+        nErr = dc1394_feature_set_value(m_ptDcCamera, DC1394_FEATURE_GAMMA, nTemp );
+        nErr = dc1394_feature_get(m_ptDcCamera, &m_tFeature_gamma);
+        m_nCurrentGama = m_tFeature_gamma.value;
+    }
+    else {
+        nErr = dc1394_feature_set_value(m_ptDcCamera, DC1394_FEATURE_GAMMA, m_nCurrentGama);
+        nErr = dc1394_feature_get(m_ptDcCamera, &m_tFeature_gamma);
+    }
+    printf("m_tFeature_gamma.value = %u\n", m_tFeature_gamma.value);
+    printf("m_nCurrentGama = %u\n", m_nCurrentGama);
+    printf("====================================\n");
+
+    if(m_nBlue == 0 && m_nRed == 0) { // not set yet so we set some sane value
+        printf("set the white balance in the midle of min/max\n");
+        m_tFeature_white_balance.id = DC1394_FEATURE_WHITE_BALANCE;
+        nErr = dc1394_feature_get(m_ptDcCamera, &m_tFeature_white_balance);
+        m_nBlue = m_tFeature_white_balance.min + (m_tFeature_white_balance.max - m_tFeature_white_balance.min)/2 -1;
+        m_nRed = m_tFeature_white_balance.min + (m_tFeature_white_balance.max - m_tFeature_white_balance.min)/2 -1;
+
+        nErr = dc1394_feature_whitebalance_set_value(m_ptDcCamera, m_nBlue, m_nRed );
+        nErr = dc1394_feature_whitebalance_get_value(m_ptDcCamera, &m_nBlue, &m_nRed);
+        printf("m_nBlue = %u\n", m_nBlue);
+        printf("m_nRed = %u\n", m_nRed);
+        printf("m_tFeature_white_balance.min = %u\n", m_tFeature_white_balance.min);
+        printf("m_tFeature_white_balance.max = %u\n", m_tFeature_white_balance.max);
+    }
+    else {
+        nErr = dc1394_feature_whitebalance_set_value(m_ptDcCamera, m_nBlue, m_nRed );
+        nErr = dc1394_feature_whitebalance_get_value(m_ptDcCamera, &m_nBlue, &m_nRed);
+    }
+    printf("m_nBlue = %u\n", m_nBlue);
+    printf("m_nRed = %u\n", m_nRed);
+    printf("====================================\n");
+    
+    
+
+}
