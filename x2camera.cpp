@@ -403,6 +403,7 @@ int X2Camera::CCGetFullDynamicRange(const enumCameraIndex& Camera, const enumWhi
 	X2MutexLocker ml(GetMutex());
 
     dwDynRg = (unsigned long)m_Camera.getBitDepth();
+    printf("Full dynamic range is : %lu\n", dwDynRg);
 
 	return SB_OK;
 }
