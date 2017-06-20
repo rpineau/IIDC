@@ -88,7 +88,9 @@ protected:
     bool                    m_bNeedSwap;
     bool                    m_bNeedDepthFix;
     uint8_t                 m_nDepthBitLeftShift;
-    bool                    m_bBodeIs16bits;
+    bool                    m_bModeIs16bits;
+    bool                    m_bNeed8bitTo16BitExpand;
+
 
     uint32_t                m_nWidth;
     uint32_t                m_nHeight;

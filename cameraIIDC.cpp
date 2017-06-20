@@ -152,11 +152,14 @@ int CCameraIIDC::Connect(uint64_t cameraGuid)
      }
      else { // not format 7
      */
-    m_bBodeIs16bits = bIs16bitMode(m_tCurrentMode);
-    if(m_bBodeIs16bits)
+    m_bModeIs16bits = bIs16bitMode(m_tCurrentMode);
+    if(m_bModeIs16bits)
         m_nBitsPerPixel = 16;
-    else
+    else {
         m_nBitsPerPixel = 8;
+        m_bNeed8bitTo16BitExpand = true;
+    }
+
     printf("bit depth = %d\n", m_nBitsPerPixel);
 
     // } // end of not format 7
@@ -340,12 +343,15 @@ int CCameraIIDC::listCamera(std::vector<uint64_t>  &cameraIdList)
 
 void CCameraIIDC::updateFrame(dc1394video_frame_t *frame)
 {
-    dc1394error_t err;
     uint32_t w,h;
     uint32_t image_bytes;
     uint16_t pixel_data;
     unsigned char *old_buffer=NULL;
     unsigned char *new_buffer=NULL;
+    unsigned char *expandBuffer = NULL;
+    uint8_t *pixBuffer = NULL;
+    uint16_t *pixBuffer16 = NULL;
+    old_buffer = frame->image;
     w = frame->size[0];
     h = frame->size[1];
     image_bytes = frame->image_bytes;
@@ -354,6 +360,19 @@ void CCameraIIDC::updateFrame(dc1394video_frame_t *frame)
         free(m_pframeBuffer);
         m_pframeBuffer = NULL;
     }
+
+    if(m_bNeed8bitTo16BitExpand) {
+        pixBuffer = frame->image;
+        // allocate new buffer
+        expandBuffer = (unsigned char *)malloc(image_bytes*2);
+        image_bytes = image_bytes*2;
+        // copy data with << 8 to new dest.
+        for(int i=0; i<image_bytes; i++){
+            expandBuffer[i] = (uint16_t)(pixBuffer[i]) << 8;
+        }
+        frame->image = expandBuffer;
+    }
+
     printf("Allocating buffer of %d bytes\n", image_bytes);
     m_pframeBuffer = (unsigned char *)malloc(image_bytes);
 
@@ -362,23 +381,19 @@ void CCameraIIDC::updateFrame(dc1394video_frame_t *frame)
         new_buffer = (unsigned char *)malloc(image_bytes);
         //      do some byte swapping using swab
         swab(frame->image, m_pframeBuffer, image_bytes);
-        old_buffer = frame->image;
         frame->image = m_pframeBuffer;
     }
 
-    // may be we should check the depth in the frame instead of having a variable (set via the GUI).
     // do we need to fix the bit depth ? -> yes I'm looking at you Sony...
-
-    if(m_bNeedDepthFix && m_bBodeIs16bits) {
+    if(m_bNeedDepthFix && m_bModeIs16bits) {
         printf("Adjusting bit depth\n");
         // we need to cast to a 16bit int to be able to do the right bit shift
-        uint16_t *pixBuffer = (uint16_t *)frame->image;
+        uint16_t *pixBuffer16 = (uint16_t *)frame->image;
         for(int i=0; i<image_bytes/2; i++){
-            pixel_data = pixBuffer[i];
+            pixel_data = pixBuffer16[i];
             pixel_data <<= m_nDepthBitLeftShift;
-            pixBuffer[i] = pixel_data;
+            pixBuffer16[i] = pixel_data;
         }
-        frame->data_depth = 16;
     }
 
     // copy image frame buffer to m_frameBuffer;
@@ -387,11 +402,13 @@ void CCameraIIDC::updateFrame(dc1394video_frame_t *frame)
     memcpy(m_pframeBuffer, frame->image, image_bytes);
     m_bFrameAvailable = true;
     
-    if(new_buffer) {
-        frame->image = old_buffer;
-        free(new_buffer);
-    }
+    frame->image = old_buffer;
 
+    if(new_buffer)
+        free(new_buffer);
+
+    if(expandBuffer)
+        free(expandBuffer);
 }
 
 int CCameraIIDC::startCaputure()
@@ -551,13 +568,10 @@ int CCameraIIDC::getFrame(int nHeight, int nMemWidth, unsigned char* frameBuffer
 
     if(!frameBuffer)
         return ERR_POINTER;
-    printf("data width in byte should be %d\n", (m_nWidth*(m_nBitsPerPixel/8)));
-    if (nMemWidth > (m_nWidth*(m_nBitsPerPixel/8))) {
-        nMemWidth = (m_nWidth*(m_nBitsPerPixel/8));
-        printf("Adjusting nMemWidth to %d\n", nMemWidth);
-    }
+
     //  copy internal m_pframeBuffer to frameBuffer
     sizeToCopy = nHeight * nMemWidth;
+    printf("copying %d byte from internal buffer\n", sizeToCopy);
     memcpy(frameBuffer, m_pframeBuffer, sizeToCopy);
 
     return nErr;
