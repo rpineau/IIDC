@@ -33,6 +33,17 @@ class TickCountInterface;
 //For properties that need to be persistent
 #define KEY_X2CAM_ROOT			"X2_IIDC"
 #define KEY_X2CAM_GUID          "X2_IIDC_GUID"
+
+#define KEY_X2CAM_BRIGHTNESS        "X2_IIDC_BRIGHTNESS"
+#define KEY_X2CAM_SHARPNESS         "X2_IIDC_SHARPNESS"
+#define KEY_X2CAM_WHITE_BALANCE_B   "X2_IIDC_WHITE_BALANCE_B"
+#define KEY_X2CAM_WHITE_BALANCE_R   "X2_IIDC_WHITE_BALANCE_R"
+#define KEY_X2CAM_HUE               "X2_IIDC_HUE"
+#define KEY_X2CAM_SATURATION        "X2_IIDC_SATURATION"
+#define KEY_X2CAM_GAMA              "X2_IIDC_GAMA"
+#define KEY_X2CAM_GAIN              "X2_IIDC_GAIN"
+
+
 #define KEY_WIDTH				"Width"
 #define KEY_HEIGHT				"Height"
 

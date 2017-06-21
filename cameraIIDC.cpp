@@ -239,36 +239,43 @@ int CCameraIIDC::Connect(uint64_t cameraGuid)
 
     // set some basic hardcoded features values
     nTemp = 480;
+    dc1394_feature_set_mode(m_ptDcCamera, DC1394_FEATURE_FRAME_RATE, DC1394_FEATURE_MODE_MANUAL);
     nErr = dc1394_feature_set_value(m_ptDcCamera, DC1394_FEATURE_FRAME_RATE, nTemp );
     if(nErr)
         printf("Error setting DC1394_FEATURE_FRAME_RATE\n");
 
     nTemp = 510;
+    dc1394_feature_set_mode(m_ptDcCamera, DC1394_FEATURE_BRIGHTNESS, DC1394_FEATURE_MODE_MANUAL);
     nErr = dc1394_feature_set_value(m_ptDcCamera, DC1394_FEATURE_BRIGHTNESS, nTemp );
     if(nErr)
         printf("Error setting DC1394_FEATURE_BRIGHTNESS\n");
 
     nTemp = 310;
+    dc1394_feature_set_mode(m_ptDcCamera, DC1394_FEATURE_EXPOSURE, DC1394_FEATURE_MODE_MANUAL);
     nErr = dc1394_feature_set_value(m_ptDcCamera, DC1394_FEATURE_EXPOSURE, nTemp );
     if(nErr)
         printf("Error setting DC1394_FEATURE_EXPOSURE\n");
 
     nTemp = 1529;
+    dc1394_feature_set_mode(m_ptDcCamera, DC1394_FEATURE_SHARPNESS, DC1394_FEATURE_MODE_MANUAL);
     nErr = dc1394_feature_set_value(m_ptDcCamera, DC1394_FEATURE_SHARPNESS, nTemp );
     if(nErr)
         printf("Error setting DC1394_FEATURE_SHARPNESS\n");
 
     nTemp = 1024;
+    dc1394_feature_set_mode(m_ptDcCamera, DC1394_FEATURE_GAMMA, DC1394_FEATURE_MODE_MANUAL);
     nErr = dc1394_feature_set_value(m_ptDcCamera, DC1394_FEATURE_GAMMA, nTemp );
     if(nErr)
         printf("Error setting DC1394_FEATURE_GAMMA\n");
 
     nTemp = 286;
+    dc1394_feature_set_mode(m_ptDcCamera, DC1394_FEATURE_SHUTTER, DC1394_FEATURE_MODE_MANUAL);
     nErr = dc1394_feature_set_value(m_ptDcCamera, DC1394_FEATURE_SHUTTER, nTemp );
     if(nErr)
         printf("Error setting DC1394_FEATURE_SHUTTER\n");
 
     nTemp = 65;
+    dc1394_feature_set_mode(m_ptDcCamera, DC1394_FEATURE_GAIN, DC1394_FEATURE_MODE_MANUAL);
     nErr = dc1394_feature_set_value(m_ptDcCamera, DC1394_FEATURE_GAIN, nTemp );
     if(nErr)
         printf("Error setting DC1394_FEATURE_GAIN\n");
@@ -351,6 +358,7 @@ void CCameraIIDC::updateFrame(dc1394video_frame_t *frame)
     unsigned char *expandBuffer = NULL;
     uint8_t *pixBuffer = NULL;
     uint16_t *pixBuffer16 = NULL;
+
     old_buffer = frame->image;
     w = frame->size[0];
     h = frame->size[1];
@@ -364,12 +372,13 @@ void CCameraIIDC::updateFrame(dc1394video_frame_t *frame)
     if(m_bNeed8bitTo16BitExpand) {
         pixBuffer = frame->image;
         // allocate new buffer
-        expandBuffer = (unsigned char *)malloc(image_bytes*2);
         image_bytes = image_bytes*2;
-        // copy data with << 8 to new dest.
+        expandBuffer = (unsigned char *)malloc(image_bytes);
+        // copy data with 16 bit cast to new dest.
         for(int i=0; i<image_bytes; i++){
-            expandBuffer[i] = (uint16_t)(pixBuffer[i]) << 8;
+            expandBuffer[i] = (uint16_t)(pixBuffer[i]);
         }
+        m_bNeedSwap = false;
         frame->image = expandBuffer;
     }
 
@@ -647,6 +656,7 @@ void CCameraIIDC::setCameraFeatures()
 
 
     if(m_nCurrentHue == 0) { // not set yet so we set some sane value
+        dc1394_feature_set_mode(m_ptDcCamera, DC1394_FEATURE_HUE, DC1394_FEATURE_MODE_MANUAL);
         printf("set the hue in the midle of min/max\n");
         m_tFeature_hue.id = DC1394_FEATURE_HUE;
         nErr = dc1394_feature_get(m_ptDcCamera, &m_tFeature_hue);
@@ -665,6 +675,7 @@ void CCameraIIDC::setCameraFeatures()
     printf("====================================\n");
 
     if(m_nCurrentBrightness == 0) { // not set yet so we set some sane value
+        dc1394_feature_set_mode(m_ptDcCamera, DC1394_FEATURE_BRIGHTNESS, DC1394_FEATURE_MODE_MANUAL);
         printf("set the brightness in the midle of min/max]\n");
         m_tFeature_brightness.id = DC1394_FEATURE_BRIGHTNESS;
         nErr = dc1394_feature_get(m_ptDcCamera, &m_tFeature_brightness);
@@ -683,6 +694,7 @@ void CCameraIIDC::setCameraFeatures()
     printf("====================================\n");
 
     if(m_nCurrentGama == 0) { // not set yet so we set some sane value
+        dc1394_feature_set_mode(m_ptDcCamera, DC1394_FEATURE_GAMMA, DC1394_FEATURE_MODE_MANUAL);
         printf("set the gama in the midle of min/max\n");
         m_tFeature_gamma.id = DC1394_FEATURE_GAMMA;
         nErr = dc1394_feature_get(m_ptDcCamera, &m_tFeature_gamma);
@@ -701,6 +713,7 @@ void CCameraIIDC::setCameraFeatures()
     printf("====================================\n");
 
     if(m_nBlue == 0 && m_nRed == 0) { // not set yet so we set some sane value
+        dc1394_feature_set_mode(m_ptDcCamera, DC1394_FEATURE_WHITE_BALANCE, DC1394_FEATURE_MODE_MANUAL);
         printf("set the white balance in the midle of min/max\n");
         m_tFeature_white_balance.id = DC1394_FEATURE_WHITE_BALANCE;
         nErr = dc1394_feature_get(m_ptDcCamera, &m_tFeature_white_balance);

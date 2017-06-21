@@ -42,6 +42,15 @@ X2Camera::X2Camera( const char* pszSelection,
         m_cameraGuid = std::strtoull(szTmpBuf, NULL, 0);
         printf("[X2Camera::X2Camera] m_cameraGuid = %llx\n", m_cameraGuid);
         m_Camera.setCameraGuid(m_cameraGuid);
+        // read other camera settngs
+        m_pIniUtil->readInt(KEY_X2CAM_ROOT, KEY_X2CAM_BRIGHTNESS, 0);
+        m_pIniUtil->readInt(KEY_X2CAM_ROOT, KEY_X2CAM_SHARPNESS, 0);
+        m_pIniUtil->readInt(KEY_X2CAM_ROOT, KEY_X2CAM_WHITE_BALANCE_B, 0);
+        m_pIniUtil->readInt(KEY_X2CAM_ROOT, KEY_X2CAM_WHITE_BALANCE_R, 0);
+        m_pIniUtil->readInt(KEY_X2CAM_ROOT, KEY_X2CAM_HUE, 0);
+        m_pIniUtil->readInt(KEY_X2CAM_ROOT, KEY_X2CAM_SATURATION, 0);
+        m_pIniUtil->readInt(KEY_X2CAM_ROOT, KEY_X2CAM_GAMA, 0);
+        m_pIniUtil->readInt(KEY_X2CAM_ROOT, KEY_X2CAM_GAIN, 0);
 
     }
 
