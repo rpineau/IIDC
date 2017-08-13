@@ -39,7 +39,7 @@ X2Camera::X2Camera( const char* pszSelection,
         m_cameraGuid = m_pIniUtil->readInt(KEY_X2CAM_ROOT, KEY_X2CAM_GUID, 0);
         m_pIniUtil->readString(KEY_X2CAM_ROOT, KEY_X2CAM_GUID, "0", szTmpBuf, 128);
         //  convert uuid to uint64_t
-        m_cameraGuid = std::strtoull(szTmpBuf, NULL, 0);
+        m_cameraGuid = strtoull(szTmpBuf, NULL, 0);
         printf("[X2Camera::X2Camera] m_cameraGuid = %llx\n", m_cameraGuid);
         m_Camera.setCameraGuid(m_cameraGuid);
         // read other camera settngs
