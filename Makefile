@@ -1,8 +1,8 @@
-# Makefile for libNexDome
+# Makefile for libIIDC
 
 CC = gcc
-CFLAGS = -fPIC -Wall -Wextra -O2 -g -DSB_LINUX_BUILD -I. -I./../../
-CPPFLAGS = -fPIC -Wall -Wextra -O2 -g -DSB_LINUX_BUILD -I. -I./../../
+CFLAGS = -fpic -Wall -Wextra -O2 -g -DSB_LINUX_BUILD -I. -I./../../
+CPPFLAGS = -fpic -Wall -Wextra -O2 -g -DSB_LINUX_BUILD -I. -I./../../
 LDFLAGS = -shared -lstdc++
 RM = rm -f
 STRIP = strip
@@ -15,7 +15,7 @@ OBJS = $(SRCS:.cpp=.o)
 all: ${TARGET_LIB}
 
 $(TARGET_LIB): $(OBJS)
-	$(CC) ${LDFLAGS} -o $@ $^ static_libs/`arch`/libusb.a static_libs/`arch`/libdc1394.a
+	$(CC) ${LDFLAGS} -o $@ $^ static_libs/`arch`/libdc1394.a static_libs/`arch`/libusb-1.0.a
 	$(STRIP) $@ >/dev/null 2>&1  || true
 
 $(SRCS:.cpp=.d):%.d:%.cpp
