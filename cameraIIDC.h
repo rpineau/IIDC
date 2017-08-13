@@ -17,6 +17,9 @@
 #include <vector>
 #include <sstream>
 #include <iostream>
+#ifndef SB_WIN_BUILD
+#include <unistd.h>
+#endif
 
 #include "../../licensedinterfaces/sberrorx.h"
 #include "../../licensedinterfaces/loggerinterface.h"
