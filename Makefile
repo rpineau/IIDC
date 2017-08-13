@@ -15,7 +15,7 @@ OBJS = $(SRCS:.cpp=.o)
 all: ${TARGET_LIB}
 
 $(TARGET_LIB): $(OBJS)
-	$(CC) ${LDFLAGS} -o $@ $^ static_libs/RPI/libusb.a static_libs/RPI/libdc1394.a
+	$(CC) ${LDFLAGS} -o $@ $^ static_libs/`arch`/libusb.a static_libs/`arch`/libdc1394.a
 	$(STRIP) $@ >/dev/null 2>&1  || true
 
 $(SRCS:.cpp=.d):%.d:%.cpp
