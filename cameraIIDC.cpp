@@ -215,7 +215,7 @@ int CCameraIIDC::Connect(uint64_t cameraGuid)
             break;
     }
 
-    // try to use one shot mode
+    // Use one shot mode
     nErr = dc1394_video_set_one_shot(m_ptDcCamera, DC1394_ON);
     if(nErr)
         return ERR_COMMANDNOTSUPPORTED;
@@ -357,7 +357,6 @@ void CCameraIIDC::updateFrame(dc1394video_frame_t *frame)
     unsigned char *new_buffer=NULL;
     unsigned char *expandBuffer = NULL;
     uint8_t *pixBuffer = NULL;
-    uint16_t *pixBuffer16 = NULL;
 
     old_buffer = frame->image;
     w = frame->size[0];
@@ -369,14 +368,19 @@ void CCameraIIDC::updateFrame(dc1394video_frame_t *frame)
         m_pframeBuffer = NULL;
     }
 
+
     if(m_bNeed8bitTo16BitExpand) {
         pixBuffer = frame->image;
         // allocate new buffer
+        printf("Source buffer size : %d bytes\n", image_bytes);
         image_bytes = image_bytes*2;
+        printf("Allocation expandBuffer : %d bytes\n", image_bytes);
         expandBuffer = (unsigned char *)malloc(image_bytes);
-        // copy data with 16 bit cast to new dest.
-        for(int i=0; i<image_bytes; i++){
-            expandBuffer[i] = (uint16_t)(pixBuffer[i]);
+        // copy data and expand to 16 bit (also takes care of byte swap)
+        printf("Expending to 16 bits.\n");
+        for(int i=0; i<image_bytes/2; i++){
+            expandBuffer[(i*2)+1] = pixBuffer[i];
+            expandBuffer[(i*2)] = 0x0;
         }
         m_bNeedSwap = false;
         frame->image = expandBuffer;
@@ -735,6 +739,17 @@ void CCameraIIDC::setCameraFeatures()
     printf("m_nRed = %u\n", m_nRed);
     printf("====================================\n");
     
-    
 
 }
+
+
+void CCameraIIDC::calculateFormat7PacketSize(float exposureTime)
+{
+    // frame size [bytes] times frame rate [Hz] divided by 8000 Hz determines IEEE 1394 packet payload size.
+    double nFrameRate;
+
+    nFrameRate = 1.0/exposureTime;
+
+    m_nPacketSize = (((m_nWidth * (m_nBitsPerPixel/8)) * m_nHeight) * nFrameRate) / 8000;
+}
+

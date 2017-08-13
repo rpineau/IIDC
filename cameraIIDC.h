@@ -55,6 +55,7 @@ protected:
     bool                    bIsVideoFormat7(dc1394video_mode_t tMode);
     bool                    bIs16bitMode(dc1394video_mode_t tMode);
     void                    setCameraFeatures(void);
+    void                    calculateFormat7PacketSize(float exposureTime);
 
     dc1394camera_t          *m_ptDcCamera;
     dc1394_t                *m_ptDc1394Lib;
