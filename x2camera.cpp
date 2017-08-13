@@ -531,7 +531,7 @@ int X2Camera::execModalSettingsDialog()
 	dx->setCurrentIndex("comboBox",0);
     }
 	//Display the user interface
-	if (nErr = ui->exec(bPressedOK))
+	if ((nErr = ui->exec(bPressedOK)))
 		return nErr;
 
 	//Retreive values from the user interface
@@ -561,7 +561,7 @@ int X2Camera::doAddPixelDialogExample(int& xCoord, int& yCoord, bool& bPressedOK
 	if (NULL == ui)
 		return ERR_POINTER;
 
-	if (nErr = ui->loadUserInterface("x2addpixel.ui", deviceType(), m_nPrivateISIndex))
+	if ((nErr = ui->loadUserInterface("x2addpixel.ui", deviceType(), m_nPrivateISIndex)))
 		return nErr;
 
 	if (NULL == (dx = uiutil.X2DX()))
@@ -570,7 +570,7 @@ int X2Camera::doAddPixelDialogExample(int& xCoord, int& yCoord, bool& bPressedOK
 	dx->setPropertyInt("spinBox","value", xCoord);
 	dx->setPropertyInt("spinBox_2","value", yCoord);
 
-	if (nErr = ui->exec(bPressedOK))
+	if ((nErr = ui->exec(bPressedOK)))
 		return nErr;
 
 	dx->propertyInt("spinBox","value", xCoord);
