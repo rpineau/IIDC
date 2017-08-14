@@ -29,7 +29,7 @@ CCameraIIDC::CCameraIIDC()
     m_nRed = 0;
     m_nCurrentBrightness = 0;
     m_nCurrentGama = 0;
-
+    memset(m_szCameraName,0,BUFFER_LEN);
 }
 
 CCameraIIDC::~CCameraIIDC()
@@ -69,6 +69,11 @@ int CCameraIIDC::Connect(uint64_t cameraGuid)
         if(!m_ptDcCamera)
             return ERR_NORESPONSE;
     }
+
+    // get camera name
+    snprintf(m_szCameraName, BUFFER_LEN, "%s", m_ptDcCamera->model);
+    printf("m_ptDcCamera->model = %s\n",m_ptDcCamera->model);
+    printf("m_szCameraName = %s\n",m_szCameraName);
 
     // set device speed.
     if(!m_bDeviceIsUSB) {
@@ -317,6 +322,16 @@ void CCameraIIDC::setCameraGuid(uint64_t tGuid)
     printf("[CCameraIIDC::setCameraGuid] m_cameraGuid = %llx\n", m_cameraGuid);
 }
 
+void CCameraIIDC::getCameraGuid(uint64_t &tGuid)
+{
+    tGuid = m_cameraGuid;
+}
+
+void CCameraIIDC::getCameraName(char *pszName, int nMaxStrLen)
+{
+    strncpy(pszName, m_szCameraName, nMaxStrLen);
+}
+
 int CCameraIIDC::listCamera(std::vector<uint64_t>  &cameraIdList)
 {
     int nErr = SB_OK;
@@ -339,8 +354,8 @@ int CCameraIIDC::listCamera(std::vector<uint64_t>  &cameraIdList)
     }
 
     for(i=0; i<pList->num; i++) {
-        cameraIdList.push_back(pList->ids[0].guid);
-        printf("Found camera %llx\n", pList->ids[0].guid);
+        cameraIdList.push_back(pList->ids[i].guid);
+        printf("Found camera with UUID %llx\n", pList->ids[i].guid);
     }
     dc1394_camera_free_list (pList);
 

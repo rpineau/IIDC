@@ -107,33 +107,65 @@ double X2Camera::driverInfoVersion(void) const
 #pragma mark HardwareInfoInterface
 void X2Camera::deviceInfoNameShort(BasicStringInterface& str) const										
 {
-	X2MutexLocker ml(GetMutex());
+    X2Camera* pMe = (X2Camera*)this;
+    X2MutexLocker ml(pMe->GetMutex());
 
-	str = DEVICE_AND_DRIVER_INFO_STRING;
+    if(m_bLinked) {
+        char cDevName[BUFFER_LEN];
+        uint64_t uuid;
+        pMe->m_Camera.getCameraGuid(uuid);
+        snprintf(cDevName, BUFFER_LEN, "%llx", uuid);
+        str = cDevName;
+    }
+    else {
+        str = "";
+    }
 }
+
 void X2Camera::deviceInfoNameLong(BasicStringInterface& str) const										
 {
-	X2MutexLocker ml(GetMutex());
+    X2Camera* pMe = (X2Camera*)this;
+    X2MutexLocker ml(pMe->GetMutex());
 
-	str = DEVICE_AND_DRIVER_INFO_STRING;
+    if(m_bLinked) {
+        char cDevName[BUFFER_LEN];
+        uint64_t uuid;
+        pMe->m_Camera.getCameraGuid(uuid);
+        snprintf(cDevName, BUFFER_LEN, "%llx", uuid);
+        str = cDevName;
+    }
+    else {
+        str = "";
+    }
 }
+
 void X2Camera::deviceInfoDetailedDescription(BasicStringInterface& str) const								
 {
 	X2MutexLocker ml(GetMutex());
 
 	str = DEVICE_AND_DRIVER_INFO_STRING;
 }
+
 void X2Camera::deviceInfoFirmwareVersion(BasicStringInterface& str)										
 {
 	X2MutexLocker ml(GetMutex());
 
 	str = DEVICE_AND_DRIVER_INFO_STRING;
 }
+
 void X2Camera::deviceInfoModel(BasicStringInterface& str)													
 {
 	X2MutexLocker ml(GetMutex());
 
-	str = DEVICE_AND_DRIVER_INFO_STRING;
+    if(m_bLinked) {
+        char cName[BUFFER_LEN];
+        m_Camera.getCameraName(cName, BUFFER_LEN);
+        printf("cName = %s\n", cName);
+        str = cName;
+    }
+    else {
+        str = "";
+    }
 }
 
 #pragma mark Device Access
@@ -524,11 +556,18 @@ int X2Camera::execModalSettingsDialog()
 
 	//Intialize the user interface
     m_Camera.listCamera(cameraIdList);
-    for(i=0; i< cameraIdList.size(); i++) {
-	//Populate the camera combo box and set the current index (selection)
-    snprintf(tmpBuffer, 128, "%llx",cameraIdList[i]);
-	dx->comboBoxAppendString("comboBox",tmpBuffer);
-	dx->setCurrentIndex("comboBox",0);
+    if(!cameraIdList.size()) {
+        snprintf(tmpBuffer,128,"No Camera found");
+        dx->comboBoxAppendString("comboBox",tmpBuffer);
+        dx->setCurrentIndex("comboBox",0);
+    }
+    else {
+        for(i=0; i< cameraIdList.size(); i++) {
+            //Populate the camera combo box and set the current index (selection)
+            snprintf(tmpBuffer, 128, "%llx",cameraIdList[i]);
+            dx->comboBoxAppendString("comboBox",tmpBuffer);
+            dx->setCurrentIndex("comboBox",0);
+        }
     }
 	//Display the user interface
 	if ((nErr = ui->exec(bPressedOK)))

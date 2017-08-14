@@ -26,6 +26,7 @@
 
 #include <dc1394/dc1394.h>
 
+#define BUFFER_LEN  128
 
 class CCameraIIDC {
 public:
@@ -35,6 +36,8 @@ public:
     int         Connect(uint64_t cameraGuid);
     void        Disconnect(void);
     void        setCameraGuid(uint64_t tGuid);
+    void        getCameraGuid(uint64_t &tGuid);
+    void        getCameraName(char *pszName, int nMaxStrLen);
     int         listCamera(std::vector<uint64_t>  &cameraIdList);
     void        updateFrame(dc1394video_frame_t *frame);
 
@@ -103,6 +106,7 @@ protected:
 
     unsigned char *         m_pframeBuffer;
     uint64_t                m_cameraGuid;
+    char                    m_szCameraName[BUFFER_LEN];
     bool                    m_bDeviceIsUSB;
     bool                    m_bAbort;
 
