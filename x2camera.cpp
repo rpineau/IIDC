@@ -27,7 +27,7 @@ X2Camera::X2Camera( const char* pszSelection,
 	setCameraId(CI_PLUGIN);
 
 	m_dwFin = 0;
-	m_dCurTemp = 0;
+	m_dCurTemp = -100.0;
 	m_dCurPower = 0;
 	m_CachedBinX = 1;
 	m_CachedBinY = 1; 
@@ -177,6 +177,7 @@ int X2Camera::CCEstablishLink(const enumLPTPort portLPT, const enumWhichCCD& CCD
     if(!m_cameraGuid)
         return ERR_NODEVICESELECTED;
 
+    m_dCurTemp = -100.0;
     printf("[X2Camera::CCEstablishLink] m_cameraGuid = %llx\n", m_cameraGuid);
     nErr = m_Camera.Connect(m_cameraGuid);
     if(nErr)
@@ -541,9 +542,9 @@ int X2Camera::execModalSettingsDialog()
 	X2GUIInterface*					ui = uiutil.X2UI();
 	X2GUIExchangeInterface*			dx = NULL;//Comes after ui is loaded
 	bool bPressedOK = false;
-    std::vector<uint64_t>           cameraIdList;
     int i;
     char tmpBuffer[128];
+    int nCamIndex;
 
 	if (NULL == ui)
 		return ERR_POINTER;
@@ -555,19 +556,28 @@ int X2Camera::execModalSettingsDialog()
 		return ERR_POINTER;
 
 	//Intialize the user interface
-    m_Camera.listCamera(cameraIdList);
-    if(!cameraIdList.size()) {
+    m_Camera.listCamera(m_tCameraIdList);
+    if(!m_tCameraIdList.size()) {
         snprintf(tmpBuffer,128,"No Camera found");
         dx->comboBoxAppendString("comboBox",tmpBuffer);
         dx->setCurrentIndex("comboBox",0);
     }
     else {
-        for(i=0; i< cameraIdList.size(); i++) {
+        nCamIndex = 0;
+        for(i=0; i< m_tCameraIdList.size(); i++) {
             //Populate the camera combo box and set the current index (selection)
-            snprintf(tmpBuffer, 128, "%llx",cameraIdList[i]);
+            snprintf(tmpBuffer, 128, "%s [%llx]",m_tCameraIdList[i].model, m_tCameraIdList[i].uuid);
             dx->comboBoxAppendString("comboBox",tmpBuffer);
-            dx->setCurrentIndex("comboBox",0);
+            if(m_tCameraIdList[i].uuid == m_cameraGuid)
+                nCamIndex = i;
         }
+        dx->setCurrentIndex("comboBox",nCamIndex);
+    }
+    if(m_bLinked) {
+        dx->setEnabled("pushButton", true);
+    }
+    else {
+        dx->setEnabled("pushButton", false);
     }
 	//Display the user interface
 	if ((nErr = ui->exec(bPressedOK)))
@@ -579,8 +589,8 @@ int X2Camera::execModalSettingsDialog()
         int nCamera;
 		//Camera
 		nCamera = dx->currentIndex("comboBox");
-        m_Camera.setCameraGuid(cameraIdList[nCamera]);
-        m_cameraGuid = cameraIdList[nCamera];
+        m_Camera.setCameraGuid(m_tCameraIdList[nCamera].uuid);
+        m_cameraGuid = m_tCameraIdList[nCamera].uuid;
         // store GUID (64 bits) as a string
         snprintf(tmpBuffer, 128, "%llu", m_cameraGuid);
         m_pIniUtil->writeString(KEY_X2CAM_ROOT, KEY_X2CAM_GUID, tmpBuffer);

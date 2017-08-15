@@ -201,6 +201,7 @@ private:
     CCameraIIDC     m_Camera;
     enumCameraIndex m_CameraIdx;
     uint64_t        m_cameraGuid;
+    std::vector<camera_info_t>           m_tCameraIdList;
 
     
 };

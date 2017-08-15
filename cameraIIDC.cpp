@@ -53,6 +53,7 @@ int CCameraIIDC::Connect(uint64_t cameraGuid)
     int i;
     int nFrameSize;
     uint32_t nTemp;
+
     if(cameraGuid)
         m_cameraGuid = cameraGuid;
     else
@@ -332,10 +333,12 @@ void CCameraIIDC::getCameraName(char *pszName, int nMaxStrLen)
     strncpy(pszName, m_szCameraName, nMaxStrLen);
 }
 
-int CCameraIIDC::listCamera(std::vector<uint64_t>  &cameraIdList)
+int CCameraIIDC::listCamera(std::vector<camera_info_t>  &cameraIdList)
 {
     int nErr = SB_OK;
     dc1394camera_list_t *pList = NULL;
+    dc1394camera_t *camera;
+    camera_info_t   tCameraInfo;
     int i = 0;
 
     if (!m_ptDc1394Lib) {
@@ -354,8 +357,22 @@ int CCameraIIDC::listCamera(std::vector<uint64_t>  &cameraIdList)
     }
 
     for(i=0; i<pList->num; i++) {
-        cameraIdList.push_back(pList->ids[i].guid);
+        tCameraInfo.uuid = pList->ids[i].guid;
         printf("Found camera with UUID %llx\n", pList->ids[i].guid);
+        if(pList->ids[i].guid == m_cameraGuid && m_ptDcCamera) {
+            printf("current camera %s found\n", m_szCameraName);
+            strncpy(tCameraInfo.model, m_szCameraName, BUFFER_LEN);
+            cameraIdList.push_back(tCameraInfo);
+        }
+        else {
+            camera = dc1394_camera_new (m_ptDc1394Lib, pList->ids[i].guid);
+            if (camera) {
+                printf("camera %u : %s %s\n", i, camera->vendor, camera->model);
+                strncpy(tCameraInfo.model, camera->model, BUFFER_LEN);
+                dc1394_camera_free(camera);
+                cameraIdList.push_back(tCameraInfo);
+            }
+        }
     }
     dc1394_camera_free_list (pList);
 
@@ -492,8 +509,10 @@ int CCameraIIDC::getTemperture(double &dTEmp)
 
     if (m_ptDcCamera) {
         nErr = dc1394_feature_temperature_get_value(m_ptDcCamera, &nTempGoal, &nCurTemp);
-        if(nErr)
+        if(nErr) {
+            dTEmp = -100;
             return ERR_CMDFAILED;
+        }
         dTEmp = (((double)nCurTemp)/10.0) - 273.15;
     }
     return nErr;

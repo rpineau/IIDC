@@ -28,6 +28,11 @@
 
 #define BUFFER_LEN  128
 
+typedef struct _camere_info {
+    uint64_t    uuid;
+    char        model[BUFFER_LEN];
+} camera_info_t;
+
 class CCameraIIDC {
 public:
     CCameraIIDC();
@@ -38,7 +43,7 @@ public:
     void        setCameraGuid(uint64_t tGuid);
     void        getCameraGuid(uint64_t &tGuid);
     void        getCameraName(char *pszName, int nMaxStrLen);
-    int         listCamera(std::vector<uint64_t>  &cameraIdList);
+    int         listCamera(std::vector<camera_info_t>  &cameraIdList);
     void        updateFrame(dc1394video_frame_t *frame);
 
     int         startCaputure();
