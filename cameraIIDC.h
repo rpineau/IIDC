@@ -33,6 +33,19 @@ typedef struct _camere_info {
     char        model[BUFFER_LEN];
 } camera_info_t;
 
+typedef struct camResolution {
+    uint32_t            nWidth;
+    uint32_t            nHeight;
+    dc1394video_mode_t  vidMode;
+    bool                bMode7;
+    uint32_t            nPacketSize;
+    bool                bModeIs16bits;
+    uint32_t            nBitsPerPixel;
+    bool                bNeed8bitTo16BitExpand;
+    uint16_t            nSamplesPerPixel;
+    uint16_t            nBitsPerSample;
+} camResolution_t;
+
 class CCameraIIDC {
 public:
     CCameraIIDC();
@@ -46,7 +59,7 @@ public:
     int         listCamera(std::vector<camera_info_t>  &cameraIdList);
     void        updateFrame(dc1394video_frame_t *frame);
 
-    int         startCaputure();
+    int         startCaputure(double dTime);
     int         stopCaputure();
     void        abortCapture(void);
 
@@ -62,6 +75,10 @@ public:
     uint32_t    getBitDepth();
     int         getFrame(int nHeight, int nMemWidth, unsigned char* frameBuffer);
 
+    int         getResolutions(std::vector<camResolution_t> &vResList);
+    int         setFeature(dc1394feature_t tFeature, uint32_t nValue, dc1394feature_mode_t tMode);
+    int         getFeature(dc1394feature_t tFeature, uint32_t &nValue, uint32_t nMin, uint32_t nMax,  dc1394feature_mode_t &tMode);
+
 protected:
     bool                    bIsVideoFormat7(dc1394video_mode_t tMode);
     bool                    bIs16bitMode(dc1394video_mode_t tMode);
@@ -72,7 +89,6 @@ protected:
     dc1394_t                *m_ptDc1394Lib;
     dc1394framerate_t       m_tFramerate;
     dc1394video_modes_t     m_tVideoModes;
-    dc1394video_mode_t      m_tCurrentMode;
 
     dc1394featureset_t      m_tFeatures;
     dc1394feature_info_t    m_tFeature_white_balance;
@@ -91,21 +107,14 @@ protected:
     dc1394framerates_t      m_tFramerates;
     dc1394framerate_t       m_tCurFrameRate;
     dc1394color_coding_t    m_tCoding;
-    uint32_t                m_nPacketSize;
 
-
-    uint16_t                m_nSamplesPerPixel;
-    uint16_t                m_nBitsPerSample;
-    uint32_t                m_nBitsPerPixel;
+    std::vector<camResolution_t>         m_vResList;
+    camResolution_t         m_tCurrentResolution;
     bool                    m_bNeedSwap;
     bool                    m_bNeedDepthFix;
     uint8_t                 m_nDepthBitLeftShift;
-    bool                    m_bModeIs16bits;
-    bool                    m_bNeed8bitTo16BitExpand;
 
 
-    uint32_t                m_nWidth;
-    uint32_t                m_nHeight;
     bool                    m_bConnected;
     bool                    m_bFrameAvailable;
 

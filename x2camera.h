@@ -196,7 +196,7 @@ private:
 	double m_dCurTemp;
 	double m_dCurPower;
 
-	int doAddPixelDialogExample(int& xCoord, int& yCoord, bool& bPressedOK);
+	int doIidcCAmFeatureConfig(bool& bPressedOK);
 
     CCameraIIDC     m_Camera;
     enumCameraIndex m_CameraIdx;

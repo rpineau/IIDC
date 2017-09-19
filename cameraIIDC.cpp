@@ -20,7 +20,6 @@ CCameraIIDC::CCameraIIDC()
     m_bFrameAvailable = false;
     m_cameraGuid = 0;
     m_bAbort = false;
-    m_nBitsPerPixel = 0;
     m_bNeedDepthFix = false;
 
     // camera features default value.
@@ -131,18 +130,24 @@ int CCameraIIDC::Connect(uint64_t cameraGuid)
 
     // set video mode by chosng the biggest one for now.
     nFrameSize = 0;
-    nErr = dc1394_video_get_supported_modes(m_ptDcCamera, &m_tVideoModes);
+    nErr = getResolutions(m_vResList);
     if(nErr)
         return ERR_COMMANDNOTSUPPORTED;
 
-    for (i=m_tVideoModes.num-1;i>=0;i--) {
+    for (i=0; i< m_vResList.size(); i++) {
         dc1394video_mode_t vidMode = m_tVideoModes.modes[i];
-        dc1394_get_image_size_from_video_mode(m_ptDcCamera, vidMode, &m_nWidth, &m_nHeight);
-        printf("dc1394_get_image_size_from_video_mode for mode %d : Image sise is %d x %d\n", vidMode, m_nWidth, m_nHeight);
-        if (nFrameSize < (m_nWidth*m_nHeight) && !bIsVideoFormat7(vidMode)) { // let's avoid format 7 for now.
-            nFrameSize = m_nWidth*m_nHeight;
-            m_tCurrentMode = vidMode;
-            printf("Selecting mode %d\n", vidMode);
+        printf("dc1394_get_image_size_from_video_mode for mode %d : Image sise is %d x %d\n", vidMode, m_vResList[i].nWidth, m_vResList[i].nHeight);
+        if(nFrameSize < (m_vResList[i].nWidth * m_vResList[i].nHeight) && !bIsVideoFormat7(m_vResList[i].vidMode) ) { // let's avoid format 7 for now.
+            nFrameSize = m_vResList[i].nWidth * m_vResList[i].nHeight;
+            m_tCurrentResolution = m_vResList[i];
+            printf("Selecting nWidth %d\n", m_tCurrentResolution.nWidth);
+            printf("Selecting nHeight %d\n", m_tCurrentResolution.nHeight);
+            printf("Selecting vidMode %d\n", m_tCurrentResolution.vidMode);
+            printf("Selecting bMode7 %d\n", m_tCurrentResolution.bMode7);
+            printf("Selecting nPacketSize %d\n", m_tCurrentResolution.nPacketSize);
+            printf("Selecting bModeIs16bits %d\n", m_tCurrentResolution.bModeIs16bits);
+            printf("Selecting nBitsPerPixel %d\n", m_tCurrentResolution.nBitsPerPixel);
+            printf("Selecting bNeed8bitTo16BitExpand %d\n", m_tCurrentResolution.bNeed8bitTo16BitExpand);
         }
     }
 
@@ -158,30 +163,23 @@ int CCameraIIDC::Connect(uint64_t cameraGuid)
      }
      else { // not format 7
      */
-    m_bModeIs16bits = bIs16bitMode(m_tCurrentMode);
-    if(m_bModeIs16bits)
-        m_nBitsPerPixel = 16;
-    else {
-        m_nBitsPerPixel = 8;
-        m_bNeed8bitTo16BitExpand = true;
-    }
 
-    printf("bit depth = %d\n", m_nBitsPerPixel);
+    printf("bit depth = %d\n", m_tCurrentResolution.nBitsPerPixel);
 
     // } // end of not format 7
     
-    nErr = dc1394_video_set_mode(m_ptDcCamera, m_tCurrentMode);
+    nErr = dc1394_video_set_mode(m_ptDcCamera, m_tCurrentResolution.vidMode);
     if(nErr)
         return ERR_COMMANDNOTSUPPORTED;
 
-    printf("Mode selected : %d\n", m_tCurrentMode);
-    nErr = dc1394_get_image_size_from_video_mode(m_ptDcCamera, m_tCurrentMode, &m_nWidth, &m_nHeight);
-    printf("dc1394_get_image_size_from_video_mode : Image sise is %d x %d\n", m_nWidth, m_nHeight);
+    printf("Mode selected : %d\n", m_tCurrentResolution.vidMode);
+    nErr = dc1394_get_image_size_from_video_mode(m_ptDcCamera, m_tCurrentResolution.vidMode, &m_tCurrentResolution.nWidth, &m_tCurrentResolution.nHeight);
+    printf("dc1394_get_image_size_from_video_mode : Image sise is %d x %d\n", m_tCurrentResolution.nWidth, m_tCurrentResolution.nHeight);
 
     // set framerate if we're not in Format 7
-    if(!bIsVideoFormat7(m_tCurrentMode)) {
+    if(!m_tCurrentResolution.bMode7) {
         // get slowest framerate
-        nErr = dc1394_video_get_supported_framerates(m_ptDcCamera, m_tCurrentMode, &m_tFramerates);
+        nErr = dc1394_video_get_supported_framerates(m_ptDcCamera, m_tCurrentResolution.vidMode, &m_tFramerates);
         if(nErr)
             return ERR_COMMANDNOTSUPPORTED;
 
@@ -195,32 +193,6 @@ int CCameraIIDC::Connect(uint64_t cameraGuid)
         printf("We're in Format_7, not setting frame rate\n");
     }
 
-    // we need to check for all the mode.. but this is enough for testing for now.
-    switch(m_tCurrentMode) {
-        case DC1394_VIDEO_MODE_640x480_MONO8:
-        case DC1394_VIDEO_MODE_800x600_MONO8:
-        case DC1394_VIDEO_MODE_1024x768_MONO8:
-        case DC1394_VIDEO_MODE_1280x960_MONO8:
-        case DC1394_VIDEO_MODE_1600x1200_MONO8:
-            m_nSamplesPerPixel = 1;
-            m_nBitsPerSample = 8;
-            break;
-
-        case DC1394_VIDEO_MODE_640x480_MONO16:
-        case DC1394_VIDEO_MODE_800x600_MONO16:
-        case DC1394_VIDEO_MODE_1024x768_MONO16:
-        case DC1394_VIDEO_MODE_1280x960_MONO16:
-        case DC1394_VIDEO_MODE_1600x1200_MONO16:
-            m_nSamplesPerPixel = 1;
-            m_nBitsPerSample = 16;
-            break;
-
-        default: // let's asume RGB8 for now
-            m_nSamplesPerPixel = 3;
-            m_nBitsPerSample = 8;
-            break;
-    }
-
     // Use one shot mode
     nErr = dc1394_video_set_one_shot(m_ptDcCamera, DC1394_ON);
     if(nErr)
@@ -230,10 +202,6 @@ int CCameraIIDC::Connect(uint64_t cameraGuid)
     // debug
     // print current feature values.
     /*
-    nErr = dc1394_feature_get(m_ptDcCamera, &m_tFeature_hue);
-    nErr = dc1394_feature_get(m_ptDcCamera, &m_tFeature_brightness);
-    nErr = dc1394_feature_get(m_ptDcCamera, &m_tFeature_gamma);
-    nErr = dc1394_feature_get(m_ptDcCamera, &m_tFeature_white_balance);
     printf("========== Initial values ==========\n");
     nErr = dc1394_feature_get_all(m_ptDcCamera,&m_tFeatures);
     dc1394_feature_print_all(&m_tFeatures, stdout);
@@ -241,51 +209,27 @@ int CCameraIIDC::Connect(uint64_t cameraGuid)
     printf("====================================\n");
      */
 
-
-
     // set some basic hardcoded features values
     nTemp = 480;
-    dc1394_feature_set_mode(m_ptDcCamera, DC1394_FEATURE_FRAME_RATE, DC1394_FEATURE_MODE_MANUAL);
-    nErr = dc1394_feature_set_value(m_ptDcCamera, DC1394_FEATURE_FRAME_RATE, nTemp );
-    if(nErr)
-        printf("Error setting DC1394_FEATURE_FRAME_RATE\n");
+    nErr = setFeature(DC1394_FEATURE_FRAME_RATE, nTemp, DC1394_FEATURE_MODE_MANUAL);
 
     nTemp = 510;
-    dc1394_feature_set_mode(m_ptDcCamera, DC1394_FEATURE_BRIGHTNESS, DC1394_FEATURE_MODE_MANUAL);
-    nErr = dc1394_feature_set_value(m_ptDcCamera, DC1394_FEATURE_BRIGHTNESS, nTemp );
-    if(nErr)
-        printf("Error setting DC1394_FEATURE_BRIGHTNESS\n");
+    nErr = setFeature(DC1394_FEATURE_BRIGHTNESS, nTemp, DC1394_FEATURE_MODE_MANUAL);
 
     nTemp = 310;
-    dc1394_feature_set_mode(m_ptDcCamera, DC1394_FEATURE_EXPOSURE, DC1394_FEATURE_MODE_MANUAL);
-    nErr = dc1394_feature_set_value(m_ptDcCamera, DC1394_FEATURE_EXPOSURE, nTemp );
-    if(nErr)
-        printf("Error setting DC1394_FEATURE_EXPOSURE\n");
+    nErr = setFeature(DC1394_FEATURE_EXPOSURE, nTemp, DC1394_FEATURE_MODE_MANUAL);
 
     nTemp = 1529;
-    dc1394_feature_set_mode(m_ptDcCamera, DC1394_FEATURE_SHARPNESS, DC1394_FEATURE_MODE_MANUAL);
-    nErr = dc1394_feature_set_value(m_ptDcCamera, DC1394_FEATURE_SHARPNESS, nTemp );
-    if(nErr)
-        printf("Error setting DC1394_FEATURE_SHARPNESS\n");
+    nErr = setFeature(DC1394_FEATURE_SHARPNESS, nTemp, DC1394_FEATURE_MODE_MANUAL);
 
     nTemp = 1024;
-    dc1394_feature_set_mode(m_ptDcCamera, DC1394_FEATURE_GAMMA, DC1394_FEATURE_MODE_MANUAL);
-    nErr = dc1394_feature_set_value(m_ptDcCamera, DC1394_FEATURE_GAMMA, nTemp );
-    if(nErr)
-        printf("Error setting DC1394_FEATURE_GAMMA\n");
+    nErr = setFeature(DC1394_FEATURE_GAMMA, nTemp, DC1394_FEATURE_MODE_MANUAL);
 
     nTemp = 286;
-    dc1394_feature_set_mode(m_ptDcCamera, DC1394_FEATURE_SHUTTER, DC1394_FEATURE_MODE_MANUAL);
-    nErr = dc1394_feature_set_value(m_ptDcCamera, DC1394_FEATURE_SHUTTER, nTemp );
-    if(nErr)
-        printf("Error setting DC1394_FEATURE_SHUTTER\n");
+    nErr = setFeature(DC1394_FEATURE_SHUTTER, nTemp, DC1394_FEATURE_MODE_MANUAL);
 
     nTemp = 65;
-    dc1394_feature_set_mode(m_ptDcCamera, DC1394_FEATURE_GAIN, DC1394_FEATURE_MODE_MANUAL);
-    nErr = dc1394_feature_set_value(m_ptDcCamera, DC1394_FEATURE_GAIN, nTemp );
-    if(nErr)
-        printf("Error setting DC1394_FEATURE_GAIN\n");
-
+    nErr = setFeature(DC1394_FEATURE_GAIN, nTemp, DC1394_FEATURE_MODE_MANUAL);
 
     /*
     printf("========== New values ==========\n");
@@ -401,7 +345,7 @@ void CCameraIIDC::updateFrame(dc1394video_frame_t *frame)
     }
 
 
-    if(m_bNeed8bitTo16BitExpand) {
+    if(m_tCurrentResolution.bNeed8bitTo16BitExpand) {
         pixBuffer = frame->image;
         // allocate new buffer
         printf("Source buffer size : %d bytes\n", image_bytes);
@@ -430,7 +374,7 @@ void CCameraIIDC::updateFrame(dc1394video_frame_t *frame)
     }
 
     // do we need to fix the bit depth ? -> yes I'm looking at you Sony...
-    if(m_bNeedDepthFix && m_bModeIs16bits) {
+    if(m_bNeedDepthFix && m_tCurrentResolution.bModeIs16bits) {
         printf("Adjusting bit depth\n");
         // we need to cast to a 16bit int to be able to do the right bit shift
         uint16_t *pixBuffer16 = (uint16_t *)frame->image;
@@ -456,12 +400,13 @@ void CCameraIIDC::updateFrame(dc1394video_frame_t *frame)
         free(expandBuffer);
 }
 
-int CCameraIIDC::startCaputure()
+int CCameraIIDC::startCaputure(double dTime)
 {
     int nErr = SB_OK;
 
     if (m_ptDcCamera) {
         printf("Starting capture\n");
+        printf("dTime = %f\n", dTime);
         m_bFrameAvailable = false;
         nErr = dc1394_capture_setup(m_ptDcCamera, 8, DC1394_CAPTURE_FLAGS_DEFAULT);
         if(nErr) {
@@ -503,7 +448,7 @@ void CCameraIIDC::abortCapture(void)
 int CCameraIIDC::getTemperture(double &dTEmp)
 {
     // (Value)/10 -273.15 = degree C.
-    int nErr;
+    int nErr = SB_OK;
     unsigned int nTempGoal;
     unsigned int nCurTemp;
 
@@ -524,7 +469,7 @@ int CCameraIIDC::getWidth(int &nWidth)
     int nErr = SB_OK;
 
     if (m_ptDcCamera && m_bConnected) {
-        nWidth = m_nWidth;
+        nWidth = m_tCurrentResolution.nWidth;
     } else
         printf("[getWidth] NOT CONNECTED\n");
     return nErr;
@@ -535,7 +480,7 @@ int CCameraIIDC::getHeight(int &nHeight)
     int nErr = SB_OK;
 
     if (m_ptDcCamera && m_bConnected) {
-        nHeight = m_nHeight;
+        nHeight = m_tCurrentResolution.nHeight;
     } else
         printf("[getHeight] NOT CONNECTED\n");
 
@@ -546,10 +491,10 @@ int CCameraIIDC::setROI(int nLeft, int nTop, int nRight, int nBottom)
 {
     int nErr = ERR_COMMANDNOTSUPPORTED;
 
-    if(bIsVideoFormat7(m_tCurrentMode)) {
-        nErr = dc1394_format7_get_recommended_packet_size(m_ptDcCamera, m_tCurrentMode, &m_nPacketSize);
-        nErr = dc1394_format7_set_packet_size(m_ptDcCamera, m_tCurrentMode, m_nPacketSize);
-        nErr = dc1394_format7_set_roi(m_ptDcCamera, m_tCurrentMode, m_tCoding, m_nPacketSize, nLeft, nTop, nRight, nBottom);
+    if(m_tCurrentResolution.bMode7) {
+        nErr = dc1394_format7_get_recommended_packet_size(m_ptDcCamera, m_tCurrentResolution.vidMode, &m_tCurrentResolution.nPacketSize);
+        nErr = dc1394_format7_set_packet_size(m_ptDcCamera, m_tCurrentResolution.vidMode, m_tCurrentResolution.nPacketSize);
+        nErr = dc1394_format7_set_roi(m_ptDcCamera, m_tCurrentResolution.vidMode, m_tCoding, m_tCurrentResolution.nPacketSize, nLeft, nTop, nRight, nBottom);
     }
     return nErr;
 }
@@ -558,8 +503,8 @@ int CCameraIIDC::clearROI()
 {
     int nErr = ERR_COMMANDNOTSUPPORTED;
 
-    if(bIsVideoFormat7(m_tCurrentMode)) {
-        nErr = setROI(0,0, m_nWidth, m_nHeight);
+    if(m_tCurrentResolution.bMode7) {
+        nErr = setROI(0,0, m_tCurrentResolution.nWidth, m_tCurrentResolution.nHeight);
     }
 
     return nErr;
@@ -602,7 +547,7 @@ void CCameraIIDC::clearFrameMemory()
 
 uint32_t CCameraIIDC::getBitDepth()
 {
-    return m_nBitsPerPixel;
+    return m_tCurrentResolution.nBitsPerPixel;
 }
 
 int CCameraIIDC::getFrame(int nHeight, int nMemWidth, unsigned char* frameBuffer)
@@ -624,6 +569,104 @@ int CCameraIIDC::getFrame(int nHeight, int nMemWidth, unsigned char* frameBuffer
     return nErr;
 }
 
+int CCameraIIDC::getResolutions(std::vector<camResolution_t> &vResList)
+{
+    int nErr = SB_OK;
+    int i = 0;
+    uint32_t nWidth;
+    uint32_t nHeight;
+    camResolution_t tTmpRes;
+
+    nErr = dc1394_video_get_supported_modes(m_ptDcCamera, &m_tVideoModes);
+    if(nErr)
+        return ERR_COMMANDNOTSUPPORTED;
+
+    vResList.clear();
+
+    for (i=m_tVideoModes.num-1;i>=0;i--) {
+        dc1394video_mode_t vidMode = m_tVideoModes.modes[i];
+        dc1394_get_image_size_from_video_mode(m_ptDcCamera, vidMode, &nWidth, &nHeight);
+        printf("dc1394_get_image_size_from_video_mode for mode %d : Image sise is %d x %d\n", vidMode, nWidth, nHeight);
+        tTmpRes.nWidth = nWidth;
+        tTmpRes.nHeight = nHeight;
+        tTmpRes.vidMode = vidMode;
+        if(bIsVideoFormat7(vidMode)){
+            tTmpRes.bMode7 = true;
+            // get packet size
+            dc1394_format7_get_recommended_packet_size(m_ptDcCamera, vidMode, &tTmpRes.nPacketSize);
+        }
+        else {
+            tTmpRes.bMode7 = false;
+            tTmpRes.nPacketSize = 0;
+        }
+        tTmpRes.bModeIs16bits = bIs16bitMode(vidMode);
+        if(tTmpRes.bModeIs16bits ) {
+            tTmpRes.bNeed8bitTo16BitExpand = false;
+            tTmpRes.nBitsPerPixel = 16;
+        }
+        else {
+            tTmpRes.nBitsPerPixel = 8;
+            tTmpRes.bNeed8bitTo16BitExpand = true;
+        }
+        // we need to check for all the mode.. but this is enough for testing for now.
+        switch(vidMode) {
+            case DC1394_VIDEO_MODE_640x480_MONO8:
+            case DC1394_VIDEO_MODE_800x600_MONO8:
+            case DC1394_VIDEO_MODE_1024x768_MONO8:
+            case DC1394_VIDEO_MODE_1280x960_MONO8:
+            case DC1394_VIDEO_MODE_1600x1200_MONO8:
+                tTmpRes.nSamplesPerPixel = 1;
+                tTmpRes.nBitsPerSample = 8;
+                break;
+
+            case DC1394_VIDEO_MODE_640x480_MONO16:
+            case DC1394_VIDEO_MODE_800x600_MONO16:
+            case DC1394_VIDEO_MODE_1024x768_MONO16:
+            case DC1394_VIDEO_MODE_1280x960_MONO16:
+            case DC1394_VIDEO_MODE_1600x1200_MONO16:
+                tTmpRes.nSamplesPerPixel = 1;
+                tTmpRes.nBitsPerSample = 16;
+                break;
+
+            default: // let's asume RGB8 for now
+                tTmpRes.nSamplesPerPixel = 3;
+                tTmpRes.nBitsPerSample = 8;
+                break;
+        }
+
+        vResList.push_back(tTmpRes);
+    }
+
+    return nErr;
+}
+
+
+int CCameraIIDC::setFeature(dc1394feature_t tFeature, uint32_t nValue, dc1394feature_mode_t tMode)
+{
+    int nErr;
+
+    dc1394_feature_set_mode(m_ptDcCamera, tFeature, DC1394_FEATURE_MODE_MANUAL);
+    nErr = dc1394_feature_set_value(m_ptDcCamera, DC1394_FEATURE_FRAME_RATE, nValue );
+    if(nErr)
+        printf("Error setting %d\n", tFeature);
+
+    return nErr;
+}
+
+int CCameraIIDC::getFeature(dc1394feature_t tFeature, uint32_t &nValue, uint32_t nMin, uint32_t nMax,  dc1394feature_mode_t &tMode)
+{
+    int nErr;
+    dc1394bool_t bPresent = DC1394_FALSE;
+
+    nErr =  dc1394_feature_is_present(m_ptDcCamera, tFeature, &bPresent);
+    if(bPresent) {
+        nErr |= dc1394_feature_get_value(m_ptDcCamera, tFeature, &nValue);
+        nErr |= dc1394_feature_get_mode(m_ptDcCamera, tFeature, &tMode);
+        nErr |= dc1394_feature_get_boundaries(m_ptDcCamera, tFeature, &nMin, &nMax);
+    }
+
+    return nErr;
+}
 
 #pragma mark protected methods
 bool CCameraIIDC::bIsVideoFormat7(dc1394video_mode_t tMode)
@@ -784,6 +827,6 @@ void CCameraIIDC::calculateFormat7PacketSize(float exposureTime)
 
     nFrameRate = 1.0/exposureTime;
 
-    m_nPacketSize = (((m_nWidth * (m_nBitsPerPixel/8)) * m_nHeight) * nFrameRate) / 8000;
+    m_tCurrentResolution.nPacketSize = (((m_tCurrentResolution.nWidth * (m_tCurrentResolution.nBitsPerPixel/8)) * m_tCurrentResolution.nHeight) * nFrameRate) / 8000;
 }
 

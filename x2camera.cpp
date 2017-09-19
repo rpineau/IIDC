@@ -252,7 +252,7 @@ int X2Camera::CCStartExposure(const enumCameraIndex& Cam, const enumWhichCCD CCD
 	else
 		m_dwFin = 0;
     // TBD I should try to use dTime to set the IIDC framerate and capture shutter
-    nErr = m_Camera.startCaputure();
+    nErr = m_Camera.startCaputure(dTime);
 	return nErr;
 }   
 
@@ -573,12 +573,12 @@ int X2Camera::execModalSettingsDialog()
         }
         dx->setCurrentIndex("comboBox",nCamIndex);
     }
-    if(m_bLinked) {
+    //if(m_bLinked) {
         dx->setEnabled("pushButton", true);
-    }
-    else {
-        dx->setEnabled("pushButton", false);
-    }
+    //}
+    //else {
+    //    dx->setEnabled("pushButton", false);
+    //}
 	//Display the user interface
 	if ((nErr = ui->exec(bPressedOK)))
 		return nErr;
@@ -599,7 +599,7 @@ int X2Camera::execModalSettingsDialog()
 	return nErr;
 }
 
-int X2Camera::doAddPixelDialogExample(int& xCoord, int& yCoord, bool& bPressedOK)
+int X2Camera::doIidcCAmFeatureConfig(bool& bPressedOK)
 {
 	int nErr = SB_OK;
 	X2ModalUIUtil uiutil(this, GetTheSkyXFacadeForDrivers());
@@ -610,20 +610,18 @@ int X2Camera::doAddPixelDialogExample(int& xCoord, int& yCoord, bool& bPressedOK
 	if (NULL == ui)
 		return ERR_POINTER;
 
-	if ((nErr = ui->loadUserInterface("x2addpixel.ui", deviceType(), m_nPrivateISIndex)))
+	if ((nErr = ui->loadUserInterface("IIDCCamera.ui", deviceType(), m_nPrivateISIndex)))
 		return nErr;
 
 	if (NULL == (dx = uiutil.X2DX()))
 		return ERR_POINTER;
 
-	dx->setPropertyInt("spinBox","value", xCoord);
-	dx->setPropertyInt("spinBox_2","value", yCoord);
+    // dx->setText("label_7","RoRo");
 
-	if ((nErr = ui->exec(bPressedOK)))
-		return nErr;
+    //Display the user interface
+    if ((nErr = ui->exec(bPressedOK)))
+        return nErr;
 
-	dx->propertyInt("spinBox","value", xCoord);
-	dx->propertyInt("spinBox_2","value", yCoord);
 
 	return nErr;
 }
@@ -631,60 +629,23 @@ int X2Camera::doAddPixelDialogExample(int& xCoord, int& yCoord, bool& bPressedOK
 
 void X2Camera::uiEvent(X2GUIExchangeInterface* uiex, const char* pszEvent)
 {
-	char szEvt[DRIVER_MAX_STRING];
 
-
+    printf("pszEvent : %s\n", pszEvent);
 	//An example of showing another modal dialog
-	if (!strcmp(szEvt, "on_pushButton_3_clicked"))
+	if (!strcmp(pszEvent, "on_pushButton_clicked"))
 	{
 		int nErr=SB_OK;
 		bool bPressedOK = false;
-		int xCoord=10;
-		int yCoord=20;
 
-		doAddPixelDialogExample(xCoord, yCoord, bPressedOK);
+		nErr = doIidcCAmFeatureConfig( bPressedOK);
 
 		if (bPressedOK)
 		{
-			int nRow=0;
-			char szX[DRIVER_MAX_STRING];
-			char szY[DRIVER_MAX_STRING];
-
-			sprintf(szX,"%d",xCoord);
-			sprintf(szY,"%d",yCoord);
-
-			//Get the number of rows
-			uiex->propertyInt("tableWidget","rowCount",nRow);
-
-			//Increase rows by one
-			uiex->setPropertyInt("tableWidget","rowCount",nRow+1);
-
-			//Set the new pixel
-			uiex->tableWidgetSetItem("tableWidget", nRow,0,szX);
-			uiex->tableWidgetSetItem("tableWidget", nRow,1,szY);
 		}
 	}
 	else
-		if (!strcmp(szEvt, "on_pushButton_4_clicked"))
+		if (!strcmp(pszEvent, "on_timer"))
 		{
-			int nCurRow=-1;
-
-			uiex->tableWidgetCurrentRow("tableWidget",nCurRow);
-
-			if (-1!=nCurRow)
-				uiex->tableWidgetRemoveRow("tableWidget",nCurRow);
-
-		}
-	else
-		if (!strcmp(szEvt, "on_timer"))
-		{
-			static int nCount;
-			char szCount[DRIVER_MAX_STRING];
-
-			++nCount;
-			sprintf(szCount,"Elapsed seconds = %d",nCount);
-
-			uiex->setText("label_7",szCount);
 		}
 
 }
