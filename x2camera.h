@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "../../licensedinterfaces/cameradriverinterface.h"
+#include "../../licensedinterfaces/pixelsizeinterface.h"
 #include "../../licensedinterfaces/modalsettingsdialoginterface.h"
 #include "../../licensedinterfaces/sberrorx.h"
 #include "../../licensedinterfaces/theskyxfacadefordriversinterface.h"
@@ -55,7 +56,7 @@ class TickCountInterface;
 
 Use this example to write an X2Camera driver.
 */
-class X2Camera: public CameraDriverInterface, public ModalSettingsDialogInterface, public X2GUIEventInterface
+class X2Camera: public CameraDriverInterface, public ModalSettingsDialogInterface, public X2GUIEventInterface, public PixelSizeInterface
 {
 public: 
 	/*!Standard X2 constructor*/
@@ -151,6 +152,8 @@ public://Methods
 	virtual void CCAfterDownload(const enumCameraIndex& Cam, const enumWhichCCD& CCD);
 	//@} 
 
+    virtual int PixelSize1x1InMicrons(const enumCameraIndex &Camera, const enumWhichCCD &CCD, double &x, double &y);
+
 	//
 	/*!\name ModalSettingsDialogInterface Implementation
 	See ModalSettingsDialogInterface.*/
@@ -183,6 +186,9 @@ private:
 	LoggerInterface									*	m_pLogger;
 	MutexInterface									*	m_pIOMutex;
 	TickCountInterface								*	m_pTickCount;
+
+    double  mPixelSizeX;
+    double  mPixelSizeY;
 
 	int m_nPrivateISIndex;
 

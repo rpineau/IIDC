@@ -2,7 +2,7 @@
 //  cameraIIDC.hpp
 //  IIDC
 //
-//  Created by roro on 12/06/17.
+//  Created by Rodolphe Pineau on 06/12/2017
 //  Copyright © 2017 RTI-Zone. All rights reserved.
 //
 
@@ -17,6 +17,8 @@
 #include <vector>
 #include <sstream>
 #include <iostream>
+#include <map>
+
 #ifndef SB_WIN_BUILD
 #include <unistd.h>
 #endif
@@ -83,7 +85,8 @@ protected:
     bool                    bIsVideoFormat7(dc1394video_mode_t tMode);
     bool                    bIs16bitMode(dc1394video_mode_t tMode);
     void                    setCameraFeatures(void);
-    void                    calculateFormat7PacketSize(float exposureTime);
+    int                     setCameraExposure(double dTime);
+    void                    calculateFormat7PacketSize(double exposureTime);
 
     dc1394camera_t          *m_ptDcCamera;
     dc1394_t                *m_ptDc1394Lib;
@@ -123,6 +126,6 @@ protected:
     char                    m_szCameraName[BUFFER_LEN];
     bool                    m_bDeviceIsUSB;
     bool                    m_bAbort;
-
+    std::map<int,bool>      m_mAvailableFrameRate;
 };
 #endif /* cameraIIDC_hpp */

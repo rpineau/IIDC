@@ -2,7 +2,7 @@
 //  cameraIIDC.cpp
 //  IIDC
 //
-//  Created by roro on 12/06/17.
+//  Created by Rodolphe Pineau on 06/12/2017
 //  Copyright © 2017 RTI-Zone. All rights reserved.
 //
 
@@ -182,6 +182,9 @@ int CCameraIIDC::Connect(uint64_t cameraGuid)
         nErr = dc1394_video_get_supported_framerates(m_ptDcCamera, m_tCurrentResolution.vidMode, &m_tFramerates);
         if(nErr)
             return ERR_COMMANDNOTSUPPORTED;
+        for(i=0; i< m_tFramerates.num; i++) {
+            m_mAvailableFrameRate[m_tFramerates.framerates[i]] = true;
+        }
 
         m_tCurFrameRate=m_tFramerates.framerates[m_tFramerates.num-1];
         // m_tCurFrameRate = m_tFramerates.framerates[0];
@@ -408,6 +411,11 @@ int CCameraIIDC::startCaputure(double dTime)
         printf("Starting capture\n");
         printf("dTime = %f\n", dTime);
         m_bFrameAvailable = false;
+
+        nErr = setCameraExposure(dTime);
+        if(nErr)
+            return ERR_CMDFAILED;
+
         nErr = dc1394_capture_setup(m_ptDcCamera, 8, DC1394_CAPTURE_FLAGS_DEFAULT);
         if(nErr) {
             printf("Error dc1394_capture_setup\n");
@@ -819,8 +827,112 @@ void CCameraIIDC::setCameraFeatures()
 
 }
 
+int CCameraIIDC::setCameraExposure(double dTime)
+{
+    int nErr = SB_OK;
+    dc1394bool_t isAvailable;
+    float fMin;
+    float fMax;
+    bool bAvailable;
 
-void CCameraIIDC::calculateFormat7PacketSize(float exposureTime)
+    // are we in mode 7 ?
+    // if yes, set packeet size
+    if(m_tCurrentResolution.bMode7) {
+        calculateFormat7PacketSize(dTime);
+        nErr = dc1394_format7_set_packet_size(m_ptDcCamera, m_tCurrentResolution.vidMode, m_tCurrentResolution.nPacketSize);
+    }
+    else { // check the closest framerate we can chose. There might be a better way to do this .. but that'll do for now.
+        bAvailable = false;
+        if(dTime <= 1/240) {
+            m_tCurFrameRate = DC1394_FRAMERATE_240;
+            // is the needed framerate available
+            if(m_mAvailableFrameRate.count(m_tCurFrameRate)) {
+                bAvailable = true;
+                printf("Setting m_tCurFrameRate to DC1394_FRAMERATE_240\n");
+            }
+        }
+        if (dTime <= 1/120 && ! bAvailable) {
+            m_tCurFrameRate = DC1394_FRAMERATE_120;
+            // is the needed framerate available
+            if(m_mAvailableFrameRate.count(m_tCurFrameRate)) {
+                bAvailable = true;
+                printf("Setting m_tCurFrameRate to DC1394_FRAMERATE_120\n");
+            }
+        }
+        if (dTime <= 1/60 && !bAvailable) {
+            m_tCurFrameRate = DC1394_FRAMERATE_60;
+            // is the needed framerate available
+            if(m_mAvailableFrameRate.count(m_tCurFrameRate)) {
+                bAvailable = true;
+                printf("Setting m_tCurFrameRate to DC1394_FRAMERATE_60\n");
+            }
+        }
+        if (dTime <= 1/30 && !bAvailable) {
+            m_tCurFrameRate = DC1394_FRAMERATE_30;
+            // is the needed framerate available
+            if(m_mAvailableFrameRate.count(m_tCurFrameRate)) {
+                bAvailable = true;
+                printf("Setting m_tCurFrameRate to DC1394_FRAMERATE_30\n");
+            }
+        }
+        if (dTime <= 1/15 && !bAvailable) {
+            m_tCurFrameRate = DC1394_FRAMERATE_15;
+            // is the needed framerate available
+            if(m_mAvailableFrameRate.count(m_tCurFrameRate)) {
+                bAvailable = true;
+                printf("Setting m_tCurFrameRate to DC1394_FRAMERATE_15\n");
+            }
+        }
+        if (dTime <= 1/7.5 && !bAvailable) {
+            m_tCurFrameRate = DC1394_FRAMERATE_7_5;
+            // is the needed framerate available
+            if(m_mAvailableFrameRate.count(m_tCurFrameRate)) {
+                bAvailable = true;
+                printf("Setting m_tCurFrameRate to DC1394_FRAMERATE_7_5\n");
+            }
+        }
+        if (dTime <= 1/3.75 && !bAvailable) {
+            m_tCurFrameRate = DC1394_FRAMERATE_3_75;
+            // is the needed framerate available
+            if(m_mAvailableFrameRate.count(m_tCurFrameRate)) {
+                bAvailable = true;
+                printf("Setting m_tCurFrameRate to DC1394_FRAMERATE_3_75\n");
+            }
+        }
+        if (dTime <= 1/1.875 && !bAvailable) {
+            m_tCurFrameRate = DC1394_FRAMERATE_1_875;
+            // is the needed framerate available
+            if(m_mAvailableFrameRate.count(m_tCurFrameRate)) {
+                bAvailable = true;
+                printf("Setting m_tCurFrameRate to DC1394_FRAMERATE_1_875\n");
+            }
+        }
+
+        if(bAvailable)
+            nErr = dc1394_video_set_framerate(m_ptDcCamera, m_tCurFrameRate);
+        else
+            return ERR_CMDFAILED;
+    }
+
+    // set shutter speed
+    nErr = dc1394_feature_has_absolute_control(m_ptDcCamera, DC1394_FEATURE_SHUTTER, &isAvailable);
+    if(isAvailable == DC1394_TRUE) {
+        nErr = dc1394_feature_set_absolute_control(m_ptDcCamera, DC1394_FEATURE_SHUTTER, DC1394_ON);
+        nErr = dc1394_feature_get_absolute_boundaries(m_ptDcCamera, DC1394_FEATURE_SHUTTER, &fMin, &fMax);
+        printf("dTime = %f\tfMin = %f\tfMax = %f\n", dTime, fMin, fMax);
+        if(dTime>=fMin && dTime<=fMax) {
+            printf("Setting shutter speed to %f\n", dTime);
+            nErr = dc1394_feature_set_absolute_value(m_ptDcCamera, DC1394_FEATURE_SHUTTER, (float)dTime);
+        }
+        else
+            return ERR_CMDFAILED;
+    }
+
+    return nErr;
+}
+
+
+void CCameraIIDC::calculateFormat7PacketSize(double exposureTime)
 {
     // frame size [bytes] times frame rate [Hz] divided by 8000 Hz determines IEEE 1394 packet payload size.
     double nFrameRate;

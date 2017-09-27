@@ -15,7 +15,6 @@ X2Camera::X2Camera( const char* pszSelection,
 					TickCountInterface*					pTickCount)
 {   
 	m_nPrivateISIndex				= nISIndex;
-	m_pSerX							= pSerX;
 	m_pTheSkyXForMounts				= pTheSkyXForMounts;
 	m_pSleeper						= pSleeper;
 	m_pIniUtil						= pIniUtil;
@@ -34,9 +33,11 @@ X2Camera::X2Camera( const char* pszSelection,
 	m_CachedCam = 0;
     m_cameraGuid = 0;
 
+    mPixelSizeX = 0.0;
+    mPixelSizeY = 0.0;
+
     // Read in settings
     if (m_pIniUtil) {
-        m_cameraGuid = m_pIniUtil->readInt(KEY_X2CAM_ROOT, KEY_X2CAM_GUID, 0);
         m_pIniUtil->readString(KEY_X2CAM_ROOT, KEY_X2CAM_GUID, "0", szTmpBuf, 128);
         //  convert uuid to uint64_t
         m_cameraGuid = strtoull(szTmpBuf, NULL, 0);
@@ -59,20 +60,18 @@ X2Camera::X2Camera( const char* pszSelection,
 X2Camera::~X2Camera()
 {
 	//Delete objects used through composition
-	if (GetSerX())
-		delete GetSerX();
-	if (GetTheSkyXFacadeForDrivers())
-		delete GetTheSkyXFacadeForDrivers();
-	if (GetSleeper())
-		delete GetSleeper();
-	if (GetBasicIniUtil())
-		delete GetBasicIniUtil();
-	if (GetLogger())
-		delete GetLogger();
-	if (GetMutex())
-		delete GetMutex();
-	if (GetTickCountInterface())
-		delete GetTickCountInterface();
+	if (m_pTheSkyXForMounts)
+		delete m_pTheSkyXForMounts;
+	if (m_pSleeper)
+		delete m_pSleeper;
+	if (m_pIniUtil)
+		delete m_pIniUtil;
+	if (m_pLogger)
+		delete m_pLogger;
+	if (m_pIOMutex)
+		delete m_pIOMutex;
+	if (m_pTickCount)
+		delete m_pTickCount;
 
 }
 
@@ -83,9 +82,10 @@ int	X2Camera::queryAbstraction(const char* pszName, void** ppVal)
 
 	if (!strcmp(pszName, ModalSettingsDialogInterface_Name))
 		*ppVal = dynamic_cast<ModalSettingsDialogInterface*>(this);
-	else
-		if (!strcmp(pszName, X2GUIEventInterface_Name))
+	else if (!strcmp(pszName, X2GUIEventInterface_Name))
 			*ppVal = dynamic_cast<X2GUIEventInterface*>(this);
+    else if (!strcmp(pszName, PixelSizeInterface_Name))
+        *ppVal = dynamic_cast<PixelSizeInterface*>(this);
 
 	return SB_OK;
 }
@@ -214,7 +214,8 @@ int X2Camera::CCRegulateTemp(const bool& bOn, const double& dTemp)
 	if (!m_bLinked)
 		return ERR_NOLINK;
 
-	return SB_OK;
+    return ERR_NOT_IMPL;
+	// return SB_OK;
 }
 
 int X2Camera::CCGetRecommendedSetpoint(double& RecTemp)
@@ -222,8 +223,8 @@ int X2Camera::CCGetRecommendedSetpoint(double& RecTemp)
 	X2MutexLocker ml(GetMutex());
 
 	RecTemp = 100;//Set to 100 if you cannot recommend a setpoint
-
-	return SB_OK;
+    return ERR_NOT_IMPL;
+	// return SB_OK;
 }  
 
 
@@ -532,6 +533,25 @@ int X2Camera::height()
 
     }
     return nDef;
+}
+
+int X2Camera::PixelSize1x1InMicrons(const enumCameraIndex &Camera, const enumWhichCCD &CCD, double &x, double &y)
+{
+    int nErr = SB_OK;
+
+    if(!m_bLinked) {
+        x = 0.0;
+        y = 0.0;
+        return ERR_COMMNOLINK;
+    }
+
+    if(mPixelSizeX == 0.0  && mPixelSizeY == 0.0) {
+        x = mPixelSizeX;
+        y = mPixelSizeY;
+    }
+    else
+        nErr = ERR_NOT_IMPL;
+    return nErr;
 }
 
 #pragma mark UI bindings
