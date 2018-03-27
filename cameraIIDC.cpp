@@ -106,8 +106,10 @@ int CCameraIIDC::Connect(uint64_t cameraGuid)
         return ERR_COMMANDNOTSUPPORTED;
 
     m_bNeedSwap = true;
+    m_bIsPGR = false;
     // if vendor is PGR, set the endianness to little endian as we're on Intel CPU
     if (m_ptDcCamera->vendor_id == 45213) {
+        m_bIsPGR = true;
         // let's try to set the byte ordering to little endian
         //      PGR should have a register to set the endianness :)
         //      register address is 0x1048
@@ -198,9 +200,10 @@ int CCameraIIDC::Connect(uint64_t cameraGuid)
 
     // Use one shot mode
     nErr = dc1394_video_set_one_shot(m_ptDcCamera, DC1394_ON);
-    if(nErr)
-        return ERR_COMMANDNOTSUPPORTED;
-
+    if(nErr) {
+        printf("Error dc1394_video_set_one_shot\n");
+        // return ERR_COMMANDNOTSUPPORTED;
+    }
 
     // debug
     // print current feature values.
@@ -413,9 +416,10 @@ int CCameraIIDC::startCaputure(double dTime)
         m_bFrameAvailable = false;
 
         nErr = setCameraExposure(dTime);
-        if(nErr)
-            return ERR_CMDFAILED;
-
+        if(nErr) {
+           printf("setCameraExposure failed\n");
+            // return ERR_CMDFAILED;
+        }
         nErr = dc1394_capture_setup(m_ptDcCamera, 8, DC1394_CAPTURE_FLAGS_DEFAULT);
         if(nErr) {
             printf("Error dc1394_capture_setup\n");
@@ -653,8 +657,8 @@ int CCameraIIDC::setFeature(dc1394feature_t tFeature, uint32_t nValue, dc1394fea
 {
     int nErr;
 
-    dc1394_feature_set_mode(m_ptDcCamera, tFeature, DC1394_FEATURE_MODE_MANUAL);
-    nErr = dc1394_feature_set_value(m_ptDcCamera, DC1394_FEATURE_FRAME_RATE, nValue );
+    dc1394_feature_set_mode(m_ptDcCamera, tFeature, tMode);
+    nErr = dc1394_feature_set_value(m_ptDcCamera, tFeature, nValue );
     if(nErr)
         printf("Error setting %d\n", tFeature);
 
@@ -831,6 +835,7 @@ int CCameraIIDC::setCameraExposure(double dTime)
 {
     int nErr = SB_OK;
     dc1394bool_t isAvailable;
+    uint32_t nValue;
     float fMin;
     float fMax;
     bool bAvailable;
@@ -851,7 +856,7 @@ int CCameraIIDC::setCameraExposure(double dTime)
                 printf("Setting m_tCurFrameRate to DC1394_FRAMERATE_240\n");
             }
         }
-        if (dTime <= 1/120 && ! bAvailable) {
+        else if (dTime <= 1/120) {
             m_tCurFrameRate = DC1394_FRAMERATE_120;
             // is the needed framerate available
             if(m_mAvailableFrameRate.count(m_tCurFrameRate)) {
@@ -859,7 +864,7 @@ int CCameraIIDC::setCameraExposure(double dTime)
                 printf("Setting m_tCurFrameRate to DC1394_FRAMERATE_120\n");
             }
         }
-        if (dTime <= 1/60 && !bAvailable) {
+        else if (dTime <= 1/60) {
             m_tCurFrameRate = DC1394_FRAMERATE_60;
             // is the needed framerate available
             if(m_mAvailableFrameRate.count(m_tCurFrameRate)) {
@@ -867,7 +872,7 @@ int CCameraIIDC::setCameraExposure(double dTime)
                 printf("Setting m_tCurFrameRate to DC1394_FRAMERATE_60\n");
             }
         }
-        if (dTime <= 1/30 && !bAvailable) {
+        else if (dTime <= 1/30 ) {
             m_tCurFrameRate = DC1394_FRAMERATE_30;
             // is the needed framerate available
             if(m_mAvailableFrameRate.count(m_tCurFrameRate)) {
@@ -875,7 +880,7 @@ int CCameraIIDC::setCameraExposure(double dTime)
                 printf("Setting m_tCurFrameRate to DC1394_FRAMERATE_30\n");
             }
         }
-        if (dTime <= 1/15 && !bAvailable) {
+        else if (dTime <= 1/15) {
             m_tCurFrameRate = DC1394_FRAMERATE_15;
             // is the needed framerate available
             if(m_mAvailableFrameRate.count(m_tCurFrameRate)) {
@@ -883,7 +888,7 @@ int CCameraIIDC::setCameraExposure(double dTime)
                 printf("Setting m_tCurFrameRate to DC1394_FRAMERATE_15\n");
             }
         }
-        if (dTime <= 1/7.5 && !bAvailable) {
+        else if (dTime <= 1/7.5) {
             m_tCurFrameRate = DC1394_FRAMERATE_7_5;
             // is the needed framerate available
             if(m_mAvailableFrameRate.count(m_tCurFrameRate)) {
@@ -891,7 +896,7 @@ int CCameraIIDC::setCameraExposure(double dTime)
                 printf("Setting m_tCurFrameRate to DC1394_FRAMERATE_7_5\n");
             }
         }
-        if (dTime <= 1/3.75 && !bAvailable) {
+        else if (dTime <= 1/3.75) {
             m_tCurFrameRate = DC1394_FRAMERATE_3_75;
             // is the needed framerate available
             if(m_mAvailableFrameRate.count(m_tCurFrameRate)) {
@@ -899,7 +904,7 @@ int CCameraIIDC::setCameraExposure(double dTime)
                 printf("Setting m_tCurFrameRate to DC1394_FRAMERATE_3_75\n");
             }
         }
-        if (dTime <= 1/1.875 && !bAvailable) {
+        else if (dTime <= 1/1.875) {
             m_tCurFrameRate = DC1394_FRAMERATE_1_875;
             // is the needed framerate available
             if(m_mAvailableFrameRate.count(m_tCurFrameRate)) {
@@ -908,24 +913,64 @@ int CCameraIIDC::setCameraExposure(double dTime)
             }
         }
 
-        if(bAvailable)
+        // PGR stuff
+        //
+        // REG_CAMERA_FRAME_RATE_FEATURE = register 0x83C, set bit 6 to 0 of the value to enable  Extended Shutter Times
+        // then use the Max_Value of the ABS_VAL_SHUTTER
+        //
+        if(m_bIsPGR) {
+            nErr = dc1394_get_control_register(m_ptDcCamera,REG_CAMERA_FRAME_RATE_FEATURE, &nValue);
+            if(nErr) {
+                printf("Error dc1394_get_control_register : %d\n", nErr);
+            }
+            nValue &= 0xFFFFFFBF; // set bit 6 to 0
+            nErr = dc1394_set_control_register(m_ptDcCamera,REG_CAMERA_FRAME_RATE_FEATURE, nValue);
+            if(nErr) {
+                printf("Error dc1394_set_control_register : %d\n", nErr);
+            }
+
+        }
+        else if(bAvailable) {
             nErr = dc1394_video_set_framerate(m_ptDcCamera, m_tCurFrameRate);
-        else
+            if(nErr) {
+                printf("Error setting m_tCurFrameRate to %d` in dc1394_video_set_framerate\n", m_tCurFrameRate);
+            }
+        }
+        else {
+            printf("No available frame rate for %f\n", dTime);
             return ERR_CMDFAILED;
+        }
     }
 
     // set shutter speed
     nErr = dc1394_feature_has_absolute_control(m_ptDcCamera, DC1394_FEATURE_SHUTTER, &isAvailable);
+    if(nErr) {
+        printf("Error dc1394_feature_has_absolute_control : %d\n", nErr);
+    }
     if(isAvailable == DC1394_TRUE) {
         nErr = dc1394_feature_set_absolute_control(m_ptDcCamera, DC1394_FEATURE_SHUTTER, DC1394_ON);
+        if(nErr) {
+            printf("Error dc1394_feature_set_absolute_control : %d\n", nErr);
+        }
         nErr = dc1394_feature_get_absolute_boundaries(m_ptDcCamera, DC1394_FEATURE_SHUTTER, &fMin, &fMax);
+        if(nErr) {
+            printf("Error dc1394_feature_get_absolute_boundaries : %d\n", nErr);
+        }
         printf("dTime = %f\tfMin = %f\tfMax = %f\n", dTime, fMin, fMax);
         if(dTime>=fMin && dTime<=fMax) {
             printf("Setting shutter speed to %f\n", dTime);
             nErr = dc1394_feature_set_absolute_value(m_ptDcCamera, DC1394_FEATURE_SHUTTER, (float)dTime);
+            if(nErr) {
+                printf("Error dc1394_feature_set_absolute_value : %d\n", nErr);
+            }
         }
-        else
-            return ERR_CMDFAILED;
+        else {
+            printf(" if(dTime>=fMin && dTime<=fMax) failed !! ?!?!?\n");
+            // return ERR_CMDFAILED;
+        }
+    }
+    else {
+        printf("Error, shutter doesn't have absolute control\n");
     }
 
     return nErr;

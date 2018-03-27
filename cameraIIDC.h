@@ -27,6 +27,7 @@
 #include "../../licensedinterfaces/loggerinterface.h"
 
 #include <dc1394/dc1394.h>
+#define REG_CAMERA_FRAME_RATE_FEATURE       0x83CU
 
 #define BUFFER_LEN  128
 
@@ -120,6 +121,7 @@ protected:
 
     bool                    m_bConnected;
     bool                    m_bFrameAvailable;
+    bool                    m_bIsPGR;
 
     unsigned char *         m_pframeBuffer;
     uint64_t                m_cameraGuid;
