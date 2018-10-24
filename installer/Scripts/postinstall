@@ -25,9 +25,6 @@ fi
 
 echo "Installing in $TheSkyX_Path/Resources/Common/$PLUGINS_DIR/CameraPlugIns/"
 
-mkdir -p "$TheSkyX_Path/Resources/Common/$PLUGINS_DIR/CameraPlugIns/"
-
-
 cp "/tmp/IIDC_X2/cameralist IIDC.txt" "$TheSkyX_Path/Resources/Common/Miscellaneous Files/"
 if [ "$?" -ne "0" ]; then exit 1; fi
 cp "/tmp/IIDC_X2/IIDCCamSelect.ui" "$TheSkyX_Path/Resources/Common/$PLUGINS_DIR/CameraPlugIns/"
