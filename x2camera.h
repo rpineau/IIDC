@@ -195,7 +195,7 @@ private:
 	int width(void);
 	int height(void);
 
-	int m_dwFin;
+	unsigned long m_dwFin;
 	int m_CachedBinX;
 	int m_CachedBinY;
 	int m_CachedCam;
