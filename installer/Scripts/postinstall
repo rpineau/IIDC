@@ -29,10 +29,16 @@ echo "Installing in $PLUGINS_DIR/CameraPlugIns/"
 
 cp "/tmp/IIDC_X2/cameralist IIDC.txt" "$TheSkyX_Path/Resources/Common/Miscellaneous Files/"
 if [ "$?" -ne "0" ]; then exit 1; fi
+
+rm -f "$PLUGINS_DIR/CameraPlugIns/IIDCCamSelect.ui"
 cp "/tmp/IIDC_X2/IIDCCamSelect.ui" "$PLUGINS_DIR/CameraPlugIns/"
 if [ "$?" -ne "0" ]; then exit 1; fi
+
+rm -f "$PLUGINS_DIR/CameraPlugIns/IIDCCamera.ui"
 cp "/tmp/IIDC_X2/IIDCCamera.ui" "$PLUGINS_DIR/CameraPlugIns/"
 if [ "$?" -ne "0" ]; then exit 1; fi
+
+rm -f "$PLUGINS_DIR/CameraPlugIns/libIIDC.dylib"
 cp "/tmp/IIDC_X2/libIIDC.dylib" "$PLUGINS_DIR/CameraPlugIns/"
 if [ "$?" -ne "0" ]; then exit 1; fi
 
