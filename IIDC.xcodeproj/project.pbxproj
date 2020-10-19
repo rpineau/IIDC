@@ -18,7 +18,6 @@
 		931844011EEF460500AE51F8 /* cameraIIDC.h in Headers */ = {isa = PBXBuildFile; fileRef = 931843FF1EEF460500AE51F8 /* cameraIIDC.h */; };
 		931844041EEF502500AE51F8 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 931844021EEF500B00AE51F8 /* CoreServices.framework */; };
 		931844061EEF507A00AE51F8 /* libusb-1.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 931844051EEF507A00AE51F8 /* libusb-1.0.a */; };
-		931844081EEF50D100AE51F8 /* libobjc.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 931844071EEF50D100AE51F8 /* libobjc.tbd */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -42,7 +41,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				931844081EEF50D100AE51F8 /* libobjc.tbd in Frameworks */,
 				931844041EEF502500AE51F8 /* CoreServices.framework in Frameworks */,
 				931843FD1EEF395D00AE51F8 /* CoreFoundation.framework in Frameworks */,
 				931843FB1EEF394F00AE51F8 /* IOKit.framework in Frameworks */,
