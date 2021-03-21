@@ -636,7 +636,6 @@ int X2Camera::doIidcCAmFeatureConfig(bool& bPressedOK)
 	if (NULL == (dx = uiutil.X2DX()))
 		return ERR_POINTER;
 
-    // dx->setText("label_7","RoRo");
 
     //Display the user interface
     if ((nErr = ui->exec(bPressedOK)))

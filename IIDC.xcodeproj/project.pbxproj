@@ -11,13 +11,11 @@
 		931843F11EEF350D00AE51F8 /* main.h in Headers */ = {isa = PBXBuildFile; fileRef = 931843ED1EEF350D00AE51F8 /* main.h */; };
 		931843F21EEF350D00AE51F8 /* x2camera.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 931843EE1EEF350D00AE51F8 /* x2camera.cpp */; };
 		931843F31EEF350D00AE51F8 /* x2camera.h in Headers */ = {isa = PBXBuildFile; fileRef = 931843EF1EEF350D00AE51F8 /* x2camera.h */; };
-		931843F71EEF392800AE51F8 /* libdc1394.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 931843F51EEF392800AE51F8 /* libdc1394.a */; };
 		931843FB1EEF394F00AE51F8 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 931843FA1EEF394F00AE51F8 /* IOKit.framework */; };
 		931843FD1EEF395D00AE51F8 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 931843FC1EEF395D00AE51F8 /* CoreFoundation.framework */; };
 		931844001EEF460500AE51F8 /* cameraIIDC.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 931843FE1EEF460500AE51F8 /* cameraIIDC.cpp */; };
 		931844011EEF460500AE51F8 /* cameraIIDC.h in Headers */ = {isa = PBXBuildFile; fileRef = 931843FF1EEF460500AE51F8 /* cameraIIDC.h */; };
 		931844041EEF502500AE51F8 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 931844021EEF500B00AE51F8 /* CoreServices.framework */; };
-		931844061EEF507A00AE51F8 /* libusb-1.0.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 931844051EEF507A00AE51F8 /* libusb-1.0.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -44,8 +42,6 @@
 				931844041EEF502500AE51F8 /* CoreServices.framework in Frameworks */,
 				931843FD1EEF395D00AE51F8 /* CoreFoundation.framework in Frameworks */,
 				931843FB1EEF394F00AE51F8 /* IOKit.framework in Frameworks */,
-				931843F71EEF392800AE51F8 /* libdc1394.a in Frameworks */,
-				931844061EEF507A00AE51F8 /* libusb-1.0.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
